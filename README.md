@@ -165,13 +165,13 @@ The agent will automatically discover and use `authula` when a request is relate
 │   └── authula/
 │       ├── SKILL.md
 │       └── references/
-├── agents/                 # Ready-to-install bundles for each agent
-│   ├── .agents/skills/
-│   ├── .claude/skills/
-│   ├── .openclaude/skills/
-│   └── .zcode/skills/
+├── agents/                 # Agent-specific entry points (no duplicated skills)
+│   ├── .agents/skills -> ../../skills
+│   ├── .claude/skills -> ../../skills
+│   ├── .openclaude/skills -> ../../skills
+│   └── .zcode/skills -> ../../skills
 ├── scripts/
-│   └── sync-agents.sh      # Synchronize sources to every bundle
+│   └── sync-agents.sh      # Create or repair the agent symlinks
 └── install.sh              # Local and remote installer
 ```
 
@@ -188,22 +188,25 @@ The agent will automatically discover and use `authula` when a request is relate
    ```
 
 3. The directory name must match `name` and use lowercase letters, numbers, and hyphens.
-4. Synchronize the source skills to every agent bundle:
+4. Changes are immediately visible through every `agents/<agent>/skills` symlink. No copying or synchronization is required after editing a skill.
+5. If an agent symlink is missing or incorrect, recreate all links with:
 
    ```sh
    ./scripts/sync-agents.sh
    ```
 
-5. Verify that every bundle matches the canonical source:
+6. Verify the links:
 
    ```sh
-   diff -qr skills agents/.agents/skills
-   diff -qr skills agents/.claude/skills
-   diff -qr skills agents/.openclaude/skills
-   diff -qr skills agents/.zcode/skills
+   readlink agents/.agents/skills
+   readlink agents/.claude/skills
+   readlink agents/.openclaude/skills
+   readlink agents/.zcode/skills
    ```
 
-`sync-agents.sh` rebuilds the `skills/` directory inside every bundle. Make manual changes only under the root `skills/` directory, not under `agents/`.
+   Each command should print `../../skills`.
+
+The root `skills/` directory is the single source of truth. Never add or edit skills under `agents/`; those paths only link back to the canonical directory.
 
 ## Security
 

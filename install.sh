@@ -65,8 +65,12 @@ download_file() {
   fi
 }
 
+is_repository_root() {
+  [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ] && [ -d "$SOURCE_ROOT/agents" ]
+}
+
 prepare_source() {
-  if [ -d "$SOURCE_ROOT/agents/.agents/skills" ]; then
+  if is_repository_root; then
     return
   fi
 
@@ -84,8 +88,8 @@ prepare_source() {
   tar -xzf "$archive" -C "$TEMP_DIR"
   SOURCE_ROOT="$TEMP_DIR/ai-coding-skills-main"
 
-  if [ ! -d "$SOURCE_ROOT/agents/.agents/skills" ]; then
-    printf 'Downloaded repository does not contain the expected agent bundles.\n' >&2
+  if ! is_repository_root; then
+    printf 'Downloaded repository does not contain the expected skills directory.\n' >&2
     exit 1
   fi
 }
@@ -97,11 +101,11 @@ install_bundle() {
 
   prepare_source
 
-  source_dir="$SOURCE_ROOT/agents/$bundle/skills"
+  source_dir="$SOURCE_ROOT/skills"
   target_dir="$destination/$bundle/skills"
 
   if [ ! -d "$source_dir" ]; then
-    printf 'Bundle not found: %s\n' "$source_dir" >&2
+    printf 'Skills source not found: %s\n' "$source_dir" >&2
     exit 1
   fi
 
@@ -114,7 +118,7 @@ install_bundle() {
   fi
 
   if [ ! -d "$source_dir/$skill" ]; then
-    printf 'Skill not found for %s: %s\n' "$bundle" "$skill" >&2
+    printf 'Skill not found: %s\n' "$skill" >&2
     exit 1
   fi
 
