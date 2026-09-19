@@ -80,7 +80,7 @@ download_file() {
 }
 
 is_repository_root() {
-  [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ] && [ -d "$SOURCE_ROOT/agents" ]
+  [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ]
 }
 
 install_graft_cli() {
@@ -140,7 +140,7 @@ setup_graft() {
 }
 
 prepare_source() {
-  if is_repository_root; then
+  if is_repository_root && { [ "${0##*/}" = install.sh ] || [ -n "$TEMP_DIR" ]; }; then
     return
   fi
 
