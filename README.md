@@ -227,13 +227,6 @@ The agent will automatically discover and use `graft` whenever a task benefits f
 │   │   └── references/
 │   └── graft/
 │       └── SKILL.md
-├── agents/                 # Agent-specific entry points (no duplicated skills)
-│   ├── .agents/skills -> ../../skills
-│   ├── .claude/skills -> ../../skills
-│   ├── .openclaude/skills -> ../../skills
-│   └── .zcode/skills -> ../../skills
-├── scripts/
-│   └── sync-agents.sh      # Create or repair the agent symlinks
 └── install.sh              # Local and remote installer
 ```
 
@@ -250,25 +243,8 @@ The agent will automatically discover and use `graft` whenever a task benefits f
    ```
 
 3. The directory name must match `name` and use lowercase letters, numbers, and hyphens.
-4. Changes are immediately visible through every `agents/<agent>/skills` symlink. No copying or synchronization is required after editing a skill.
-5. If an agent symlink is missing or incorrect, recreate all links with:
 
-   ```sh
-   ./scripts/sync-agents.sh
-   ```
-
-6. Verify the links:
-
-   ```sh
-   readlink agents/.agents/skills
-   readlink agents/.claude/skills
-   readlink agents/.openclaude/skills
-   readlink agents/.zcode/skills
-   ```
-
-   Each command should print `../../skills`.
-
-The root `skills/` directory is the single source of truth. Never add or edit skills under `agents/`; those paths only link back to the canonical directory.
+The root `skills/` directory is the single source of truth. The installer copies from it directly into each selected agent's skills directory.
 
 ## Security
 

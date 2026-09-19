@@ -80,7 +80,7 @@ download_file() {
 }
 
 is_repository_root() {
-  [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ] && [ -d "$SOURCE_ROOT/agents" ]
+  [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ]
 }
 
 install_graft_cli() {
