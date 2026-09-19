@@ -1,10 +1,10 @@
 # AI Coding Skills
 
-Kumpulan [Agent Skills](https://agentskills.io/) yang dapat langsung dipakai oleh beberapa AI coding agent. Setiap skill berisi `SKILL.md` dan resource pendukung yang dimuat agent hanya saat relevan.
+A collection of portable [Agent Skills](https://agentskills.io/) for AI coding agents. Each skill contains a `SKILL.md` file and optional supporting resources that agents load only when relevant.
 
-## Agent yang didukung
+## Supported agents
 
-| Target | Direktori project | Installer |
+| Target | Project directory | `--agent` value |
 | --- | --- | --- |
 | Zed / Agent Skills-compatible clients | `.agents/skills/` | `agents` |
 | Claude Code | `.claude/skills/` | `claude` |
@@ -13,17 +13,58 @@ Kumpulan [Agent Skills](https://agentskills.io/) yang dapat langsung dipakai ole
 
 ## Quick start
 
-Clone atau unduh repository ini, lalu jalankan installer dari root repository.
+### Install directly from GitHub
 
-### Instal ke satu project
+You can run the installer without cloning this repository. The installer downloads the latest `main` branch and installs all skills for all supported agents into the current directory:
 
-Semua skill untuk semua agent:
+```sh
+curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh
+```
+
+Install into a specific project:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
+  | sh -s -- /path/to/project
+```
+
+Install for one agent only:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
+  | sh -s -- --agent claude /path/to/project
+```
+
+Install one skill for one agent:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
+  | sh -s -- --agent claude --skill authula /path/to/project
+```
+
+Arguments passed to a piped shell must come after `sh -s --`.
+
+> Review remote scripts before piping them into a shell. You can download the installer first, inspect it, and then run it:
+>
+> ```sh
+> curl -fsSLO https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh
+> less install.sh
+> sh install.sh --agent claude --skill authula /path/to/project
+> ```
+
+Remote installation requires `curl` or `wget`, plus `tar`.
+
+### Install from a local clone
+
+Clone or download this repository, then run the installer from the repository root.
+
+Install all skills for all agents:
 
 ```sh
 ./install.sh /path/to/project
 ```
 
-Satu agent saja dipilih dengan `--agent`:
+Select one agent with `--agent`:
 
 ```sh
 ./install.sh --agent claude /path/to/project
@@ -32,108 +73,128 @@ Satu agent saja dipilih dengan `--agent`:
 ./install.sh --agent zcode /path/to/project
 ```
 
-Satu skill saja dipilih dengan `--skill`. Tanpa `--agent`, skill tersebut dipasang untuk semua agent:
+Select one skill with `--skill`. Without `--agent`, the selected skill is installed for every supported agent:
 
 ```sh
 ./install.sh --skill authula /path/to/project
 ```
 
-Agent dan skill dapat dipilih sekaligus:
+Select an agent and a skill together:
 
 ```sh
 ./install.sh --agent claude --skill authula /path/to/project
 ```
 
-Jika dijalankan tanpa argumen, semua skill untuk semua agent dipasang ke direktori aktif:
+When run without arguments, the installer installs all skills for all agents into the current directory:
 
 ```sh
 cd /path/to/project
 /path/to/ai-coding-skills/install.sh
 ```
 
-Installer hanya menyalin skill ke direktori target dan tidak menghapus skill lain yang sudah ada.
+The installer copies skills into the target directories without removing other installed skills.
 
-### Instal sebagai skill global
+### Install globally
 
-Gunakan home directory sebagai destination:
+Use your home directory as the destination:
 
 ```sh
 ./install.sh "$HOME"
 ```
 
-Atau pasang skill tertentu hanya untuk satu agent:
+Or install a specific skill for one agent:
 
 ```sh
 ./install.sh --agent claude --skill authula "$HOME"
 ```
 
-> Dukungan lokasi global mengikuti agent masing-masing. Claude Code menggunakan `~/.claude/skills/`, sedangkan Zed dan client Agent Skills yang kompatibel dapat menggunakan `~/.agents/skills/`.
+The same operation can be run remotely:
 
-## Skill tersedia
+```sh
+curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
+  | sh -s -- --agent claude --skill authula "$HOME"
+```
+
+> Global locations depend on the agent. Claude Code uses `~/.claude/skills/`, while Zed and compatible Agent Skills clients can use `~/.agents/skills/`.
+
+## Installer reference
+
+```text
+Usage: ./install.sh [--agent <agent>] [--skill <skill>] [destination]
+```
+
+| Option | Description | Default |
+| --- | --- | --- |
+| `--agent <agent>` | Target `all`, `agents`, `claude`, `openclaude`, or `zcode` | `all` |
+| `--skill <skill>` | Install all skills or one skill by directory name | `all` |
+| `-h`, `--help` | Show command help | — |
+| `destination` | Project or home directory into which agent folders are installed | Current directory |
+
+## Available skills
 
 ### `authula`
 
-Panduan membangun autentikasi dengan [Authula](https://authula.dev/docs), framework auth berbasis plugin untuk Go.
+Guidance for building authentication with [Authula](https://authula.dev/docs), a plugin-based authentication framework for Go.
 
-Cakupan utamanya:
+Main topics include:
 
-- mode library dan standalone;
-- email/password, OAuth2, session, JWT, TOTP, magic link, API key, dan plugin lain;
-- route mappings dan proteksi endpoint;
-- konfigurasi Docker, TOML, environment variable, CORS, dan CSRF;
-- custom route, hooks, service hooks, serta custom plugin.
+- library and standalone modes;
+- email/password, OAuth2, sessions, JWT, TOTP, magic links, API keys, and other plugins;
+- route mappings and endpoint protection;
+- Docker, TOML, environment variables, CORS, and CSRF configuration;
+- custom routes, hooks, service hooks, and custom plugins.
 
-Contoh prompt setelah instalasi:
+Example prompts after installation:
 
 ```text
-Buatkan setup Authula standalone dengan PostgreSQL, email-password,
-dan session. Lindungi endpoint /me dan sertakan config.toml serta .env.example.
+Create a standalone Authula setup with PostgreSQL, email-password,
+and sessions. Protect the /me endpoint and include config.toml and .env.example.
 ```
 
 ```text
-Tambahkan Authula ke backend Go ini dengan GitHub OAuth dan session auth.
+Add Authula to this Go backend with GitHub OAuth and session authentication.
 ```
 
-Agent akan mendeteksi `authula` secara otomatis ketika permintaan berkaitan dengan Authula.
+The agent will automatically discover and use `authula` when a request is related to Authula.
 
-## Struktur repository
+## Repository structure
 
 ```text
 .
-├── skills/                 # Sumber utama seluruh skill
+├── skills/                 # Canonical source for every skill
 │   └── authula/
 │       ├── SKILL.md
 │       └── references/
-├── agents/                 # Bundle siap dipasang untuk tiap agent
+├── agents/                 # Ready-to-install bundles for each agent
 │   ├── .agents/skills/
 │   ├── .claude/skills/
 │   ├── .openclaude/skills/
 │   └── .zcode/skills/
 ├── scripts/
-│   └── sync-agents.sh      # Sinkronkan sumber ke semua bundle
-└── install.sh              # Pasang bundle ke project atau home directory
+│   └── sync-agents.sh      # Synchronize sources to every bundle
+└── install.sh              # Local and remote installer
 ```
 
-## Menambah atau memperbarui skill
+## Adding or updating a skill
 
-1. Buat atau edit skill di `skills/<nama-skill>/`.
-2. Pastikan file utamanya bernama `SKILL.md` dan memiliki frontmatter berikut:
+1. Create or edit the skill under `skills/<skill-name>/`.
+2. Ensure its main file is named `SKILL.md` and contains valid frontmatter:
 
    ```md
    ---
-   name: nama-skill
-   description: Jelaskan fungsi skill dan kapan agent harus menggunakannya.
+   name: skill-name
+   description: Explain what the skill does and when an agent should use it.
    ---
    ```
 
-3. Nama direktori harus sama dengan nilai `name`, menggunakan huruf kecil, angka, dan tanda hubung.
-4. Sinkronkan perubahan ke semua bundle:
+3. The directory name must match `name` and use lowercase letters, numbers, and hyphens.
+4. Synchronize the source skills to every agent bundle:
 
    ```sh
    ./scripts/sync-agents.sh
    ```
 
-5. Periksa bahwa setiap bundle identik dengan sumber:
+5. Verify that every bundle matches the canonical source:
 
    ```sh
    diff -qr skills agents/.agents/skills
@@ -142,8 +203,8 @@ Agent akan mendeteksi `authula` secara otomatis ketika permintaan berkaitan deng
    diff -qr skills agents/.zcode/skills
    ```
 
-`sync-agents.sh` membangun ulang direktori `skills/` di setiap bundle. Simpan perubahan manual hanya di `skills/`, bukan di dalam `agents/`.
+`sync-agents.sh` rebuilds the `skills/` directory inside every bundle. Make manual changes only under the root `skills/` directory, not under `agents/`.
 
-## Catatan keamanan
+## Security
 
-Skill adalah instruksi yang dapat mengarahkan agent untuk membaca file, menjalankan perintah, atau mengakses layanan eksternal. Audit isi `SKILL.md`, script, dan reference sebelum memasang skill dari sumber yang tidak dipercaya.
+Skills contain instructions that may direct an agent to read files, execute commands, or access external services. Audit every `SKILL.md`, script, and reference before installing skills from an untrusted source.

@@ -2,7 +2,18 @@
 
 set -eu
 
-ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SOURCE_ROOT=$SCRIPT_DIR
+REPOSITORY_ARCHIVE=https://github.com/masb0ymas/ai-coding-skills/archive/refs/heads/main.tar.gz
+TEMP_DIR=
+
+cleanup() {
+  if [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ]; then
+    rm -rf "$TEMP_DIR"
+  fi
+}
+
+trap cleanup 0 HUP INT TERM
 
 usage() {
   cat <<'EOF'
@@ -27,6 +38,10 @@ Examples:
   ./install.sh --agent claude /path/to/project
   ./install.sh --skill authula /path/to/project
   ./install.sh --agent claude --skill authula "$HOME"
+
+Remote usage:
+  curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh
+  curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --agent claude --skill authula /path/to/project
 EOF
 }
 
@@ -36,11 +51,53 @@ fail() {
   exit 1
 }
 
+download_file() {
+  url=$1
+  output=$2
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "$url" -o "$output"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q "$url" -O "$output"
+  else
+    printf 'Remote installation requires curl or wget.\n' >&2
+    exit 1
+  fi
+}
+
+prepare_source() {
+  if [ -d "$SOURCE_ROOT/agents/.agents/skills" ]; then
+    return
+  fi
+
+  command -v tar >/dev/null 2>&1 || {
+    printf 'Remote installation requires tar.\n' >&2
+    exit 1
+  }
+
+  temp_base=${TMPDIR:-/tmp}
+  TEMP_DIR=$(mktemp -d "$temp_base/ai-coding-skills.XXXXXX")
+  archive="$TEMP_DIR/repository.tar.gz"
+
+  printf 'Downloading AI Coding Skills...\n'
+  download_file "$REPOSITORY_ARCHIVE" "$archive"
+  tar -xzf "$archive" -C "$TEMP_DIR"
+  SOURCE_ROOT="$TEMP_DIR/ai-coding-skills-main"
+
+  if [ ! -d "$SOURCE_ROOT/agents/.agents/skills" ]; then
+    printf 'Downloaded repository does not contain the expected agent bundles.\n' >&2
+    exit 1
+  fi
+}
+
 install_bundle() {
   bundle=$1
   destination=$2
   skill=$3
-  source_dir="$ROOT_DIR/agents/$bundle/skills"
+
+  prepare_source
+
+  source_dir="$SOURCE_ROOT/agents/$bundle/skills"
   target_dir="$destination/$bundle/skills"
 
   if [ ! -d "$source_dir" ]; then
