@@ -1,2 +1,16 @@
 .test-install/
 .test-remote/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+.claude/
+.gemini/
+.kiro/
+.windsurf/
+
+.ignore
+.mcp.json
+AGENTS.md
+GEMINI.md
+opencode.json

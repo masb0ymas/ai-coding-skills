@@ -17,12 +17,14 @@ trap cleanup 0 HUP INT TERM
 
 usage() {
   cat <<'EOF'
-Usage: ./install.sh [--agent <agent>] [--skill <skill>] [destination]
+Usage: ./install.sh [--agent <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
 
 Options:
-  --agent <agent>  Agent target (default: all)
-  --skill <skill>  Skill to install (default: all)
-  -h, --help       Show this help
+  --agent <agent>      Agent target (default: all)
+  --skill <skill>      Skill to install (default: all)
+  --skip-graft-setup   Copy graft skill files only; skip CLI install, graft init, and verification
+  --graft-no-global    Pass --no-global to graft init (repo-only wiring, no writes outside destination)
+  -h, --help           Show this help
 
 Agents:
   all          Install for every supported agent
@@ -33,15 +35,27 @@ Agents:
 
 Destination defaults to the current directory.
 
+Graft skill setup:
+  Installing --skill graft (or --skill all when graft exists) also runs:
+    1. npm install -g @nanonets/graft (skipped if graft is already installed)
+    2. graft init -y in the destination repository
+    3. Verification that destination/graft/ exists, with a map-file count
+  This step is skipped automatically for global installs into $HOME.
+  Use --skip-graft-setup to copy skill files without running Graft.
+
 Examples:
   ./install.sh
   ./install.sh --agent claude /path/to/project
   ./install.sh --skill authula /path/to/project
   ./install.sh --agent claude --skill authula "$HOME"
+  ./install.sh --skill graft /path/to/project
+  ./install.sh --skill graft --graft-no-global /path/to/project
+  ./install.sh --skill graft --skip-graft-setup /path/to/project
 
 Remote usage:
   curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh
   curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --agent claude --skill authula /path/to/project
+  curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --skill graft /path/to/project
 EOF
 }
 
@@ -67,6 +81,62 @@ download_file() {
 
 is_repository_root() {
   [ -f "$SOURCE_ROOT/install.sh" ] && [ -d "$SOURCE_ROOT/skills" ] && [ -d "$SOURCE_ROOT/agents" ]
+}
+
+install_graft_cli() {
+  if command -v graft >/dev/null 2>&1; then
+    printf 'Graft CLI already installed: %s\n' "$(command -v graft)"
+    return
+  fi
+
+  command -v npm >/dev/null 2>&1 || {
+    printf 'Graft setup requires npm to install @nanonets/graft.\n' >&2
+    exit 1
+  }
+
+  printf 'Installing Graft CLI...\n'
+  npm install -g @nanonets/graft
+}
+
+count_graft_map_files() {
+  graph_dir=$1
+  map_files=$(find "$graph_dir" -type f \( -name '*.md' -o -name 'graph.json' -o -path "$graph_dir/.graph/*" \) -print 2>/dev/null)
+  if [ -z "$map_files" ]; then
+    printf '0'
+    return
+  fi
+  printf '%s\n' "$map_files" | wc -l | tr -d ' '
+}
+
+setup_graft() {
+  destination=$1
+  graft_no_global=$2
+  graph_dir="$destination/graft"
+
+  printf '\nSetting up Graft in %s...\n' "$destination"
+  install_graft_cli
+
+  command -v graft >/dev/null 2>&1 || {
+    printf 'Graft CLI installation did not provide a graft command.\n' >&2
+    exit 1
+  }
+
+  init_args='init -y'
+  if [ "$graft_no_global" = true ]; then
+    init_args='init --no-global -y'
+  fi
+
+  printf 'Running graft %s in %s...\n' "$init_args" "$destination"
+  # shellcheck disable=SC2086
+  (CDPATH= cd -- "$destination" && graft $init_args)
+
+  if [ ! -d "$graph_dir" ]; then
+    printf 'Graft setup failed: %s was not created.\n' "$graph_dir" >&2
+    exit 1
+  fi
+
+  map_count=$(count_graft_map_files "$graph_dir")
+  printf 'Graft setup complete: %s exists with %s map file(s).\n' "$graph_dir" "$map_count"
 }
 
 prepare_source() {
@@ -130,6 +200,8 @@ agent=all
 skill=all
 destination=.
 destination_set=false
+skip_graft_setup=false
+graft_no_global=false
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -142,6 +214,14 @@ while [ "$#" -gt 0 ]; do
       [ "$#" -ge 2 ] || fail 'Missing value for --skill'
       skill=$2
       shift 2
+      ;;
+    --skip-graft-setup)
+      skip_graft_setup=true
+      shift
+      ;;
+    --graft-no-global)
+      graft_no_global=true
+      shift
       ;;
     -h|--help)
       usage
@@ -178,3 +258,22 @@ case "$agent" in
   zcode) install_bundle .zcode "$destination" "$skill" ;;
   *) fail "Unknown agent: $agent" ;;
 esac
+
+graft_installed=false
+if [ "$skill" = all ] || [ "$skill" = graft ]; then
+  prepare_source
+  if [ -d "$SOURCE_ROOT/skills/graft" ]; then
+    graft_installed=true
+  fi
+fi
+
+if [ "$graft_installed" = true ]; then
+  if [ "$skip_graft_setup" = true ]; then
+    printf '\nSkipped Graft setup (--skip-graft-setup).\n'
+  elif [ -n "${HOME:-}" ] && [ "$destination" = "$HOME" ]; then
+    printf '\nSkipped Graft setup: destination is $HOME. Run `graft init` inside a repository instead.\n'
+  else
+    mkdir -p "$destination"
+    setup_graft "$destination" "$graft_no_global"
+  fi
+fi

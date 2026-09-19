@@ -120,15 +120,50 @@ curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/ins
 ## Installer reference
 
 ```text
-Usage: ./install.sh [--agent <agent>] [--skill <skill>] [destination]
+Usage: ./install.sh [--agent <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
 ```
 
 | Option | Description | Default |
 | --- | --- | --- |
 | `--agent <agent>` | Target `all`, `agents`, `claude`, `openclaude`, or `zcode` | `all` |
 | `--skill <skill>` | Install all skills or one skill by directory name | `all` |
+| `--skip-graft-setup` | Copy graft skill files only; skip CLI install, `graft init`, and verification | Disabled |
+| `--graft-no-global` | Pass `--no-global` to `graft init` for repo-only wiring | Disabled |
 | `-h`, `--help` | Show command help | — |
 | `destination` | Project or home directory into which agent folders are installed | Current directory |
+
+### Graft skill setup
+
+Installing the `graft` skill (either explicitly or as part of `--skill all`) also runs the operational setup in the destination:
+
+1. Install the Graft CLI unless it is already available:
+
+   ```sh
+   npm install -g @nanonets/graft
+   ```
+
+2. Build the context graph and wire it into Claude Code:
+
+   ```sh
+   cd /path/to/project
+   graft init -y
+   ```
+
+   Add `--graft-no-global` to the installer when you want repo-only wiring:
+
+   ```sh
+   ./install.sh --skill graft --graft-no-global /path/to/project
+   ```
+
+3. Verify that `graft/` was created and report how many map files it built.
+
+Use `--skip-graft-setup` for skills-only installation without touching npm or running Graft:
+
+```sh
+./install.sh --skill graft --skip-graft-setup /path/to/project
+```
+
+Graft setup is skipped automatically when the destination is `$HOME`, because global installs are not repositories.
 
 ## Available skills
 
@@ -157,14 +192,41 @@ Add Authula to this Go backend with GitHub OAuth and session authentication.
 
 The agent will automatically discover and use `authula` when a request is related to Authula.
 
+### `graft`
+
+Repo-context workflow for repositories initialized with [Graft](https://github.com/nanonets/graft): a local, linked-markdown graph plus wiring/call graphs for finding code, understanding flows, tracing callers, and scoping edits with minimal token use.
+
+Main topics include:
+
+- `graft ask "<question>" --source` for location and understanding;
+- `graft grep "<pattern>"` for exhaustive occurrences;
+- `graft skeleton <file>` for a file’s API surface;
+- `graft callers <symbol>` and `--depth N` for exact edges and blast radius;
+- `graft map` for cold-start orientation;
+- `graft build` / `graft check` for graph lifecycle and CI freshness.
+
+Example prompts after installation:
+
+```text
+Run graft map, then explain how this repository is organized and where changes usually belong.
+```
+
+```text
+Use graft to find where authentication errors are handled, then scope the smallest safe edit.
+```
+
+The agent will automatically discover and use `graft` whenever a task benefits from Graft’s context graph instead of grepping or reading source files directly.
+
 ## Repository structure
 
 ```text
 .
 ├── skills/                 # Canonical source for every skill
-│   └── authula/
-│       ├── SKILL.md
-│       └── references/
+│   ├── authula/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   └── graft/
+│       └── SKILL.md
 ├── agents/                 # Agent-specific entry points (no duplicated skills)
 │   ├── .agents/skills -> ../../skills
 │   ├── .claude/skills -> ../../skills
