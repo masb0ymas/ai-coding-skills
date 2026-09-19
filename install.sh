@@ -140,7 +140,7 @@ setup_graft() {
 }
 
 prepare_source() {
-  if is_repository_root; then
+  if is_repository_root && { [ -f "$0" ] || [ -n "$TEMP_DIR" ]; }; then
     return
   fi
 
