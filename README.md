@@ -217,17 +217,72 @@ Use graft to find where authentication errors are handled, then scope the smalle
 
 The agent will automatically discover and use `graft` whenever a task benefits from Graft’s context graph instead of grepping or reading source files directly.
 
+### `postgres-best-practices`
+
+Best practices and guidelines for working with PostgreSQL 14 through 18, with version-specific features tagged and environment-dependent examples annotated.
+
+Main topics include:
+
+- schema design, data types, normalization, and partitioning;
+- indexing strategies, composite indexes, and partial/covering indexes;
+- query optimization, `EXPLAIN ANALYZE`, bottlenecks, and planner tuning;
+- query patterns: CTEs, window functions, lateral joins, UPSERT, JSONB, and anti-patterns;
+- performance diagnostics, locks, `VACUUM`, and connection management;
+- logical replication, hot standby, transaction isolation, backup/restore, security/roles, bulk loading, connection pooling, and major upgrades.
+
+Example prompts after installation:
+
+```text
+Review this Postgres schema and suggest indexes for the most common query patterns.
+```
+
+```text
+This query is slow under load. Use EXPLAIN ANALYZE and recommend the smallest safe optimization.
+```
+
+The agent will automatically discover and use `postgres-best-practices` when writing SQL, designing schemas, optimizing queries, or setting up Postgres.
+
+### `typesafe-ai`
+
+Guidance for building AI-powered software with [TypeSafe](https://docs.typesafe.ai/) System One models, including Jev. It turns natural language and application state into typed judgments and probabilities that code can combine.
+
+Main topics include:
+
+- `Choice`, `Noul`, and `Score` primitives for structured decisions;
+- state design, instructions, criteria, and atomic question decomposition;
+- routing, ranking, extraction, verification, reranking, and interaction patterns;
+- speculative fan-out, confidence-gated routing, and composite scoring;
+- live docs, SDK usage, cookbooks, and uncertainty handling.
+
+Example prompts after installation:
+
+```text
+Design TypeSafe judgments for routing support tickets by intent, urgency, and required arguments.
+```
+
+```text
+Replace this prompt-and-parse LLM step with a structured TypeSafe Choice plus confidence-based escalation.
+```
+
+The agent will automatically discover and use `typesafe-ai` when a feature needs programmable common sense or a prompt-and-parse step could become a structured decision.
+
 ## Repository structure
 
 ```text
 .
-├── skills/                 # Canonical source for every skill
+├── skills/                          # Canonical source for every skill
 │   ├── authula/
 │   │   ├── SKILL.md
 │   │   └── references/
-│   └── graft/
+│   ├── graft/
+│   │   └── SKILL.md
+│   ├── postgres-best-practices/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   └── typesafe-ai/
+│       ├── LICENSE
 │       └── SKILL.md
-└── install.sh              # Local and remote installer
+└── install.sh                       # Local and remote installer
 ```
 
 ## Adding or updating a skill
