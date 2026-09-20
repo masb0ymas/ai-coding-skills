@@ -266,6 +266,56 @@ Replace this prompt-and-parse LLM step with a structured TypeSafe Choice plus co
 
 The agent will automatically discover and use `typesafe-ai` when a feature needs programmable common sense or a prompt-and-parse step could become a structured decision.
 
+### `ui-ux-pro-max`
+
+UI/UX design intelligence from [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT) for designing, building, reviewing, or fixing web, mobile, and desktop interfaces.
+
+Main topics include:
+
+- AI-powered design-system generation with pattern, style, color, typography, effects, and anti-patterns;
+- 79 searchable UI styles (50 active), 192 product palettes/reasoning profiles, and 74 font pairings;
+- 119 UX guidelines covering accessibility, interaction, responsive layout, forms, navigation, and charts;
+- searchable local data for icons, GSAP presets, chart types, and 22 technology stacks;
+- Python-powered `search.py` for design-system generation, domain-specific lookup, and stack-specific guidance;
+- pre-delivery quality checks and a persistable Master + page-override design-system pattern.
+
+Example prompts after installation:
+
+```text
+Build a landing page for my SaaS product with a complete generated design system.
+```
+
+```text
+Review this dashboard UI for accessibility, responsive layout, and UX anti-patterns.
+```
+
+The agent will automatically discover and use `ui-ux-pro-max` for pages, components, design systems, accessibility, animation, responsiveness, typography, color, charts, or stack-specific UI implementation.
+
+### `ui-styling`
+
+UI styling skill from [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT, upstream author: claudekit) for creating accessible interfaces with shadcn/ui, Tailwind CSS, and canvas-based visual design.
+
+Main topics include:
+
+- shadcn/ui components built on Radix UI: forms, layout, navigation, overlays, dialogs, tables, and feedback;
+- theme configuration, CSS variables, color palettes, and dark-mode implementation;
+- accessibility patterns: keyboard navigation, focus management, ARIA, and form validation;
+- Tailwind utility-first styling, responsive mobile-first layouts, customization, and theme extensions;
+- canvas design-system philosophy for posters, brand materials, and visual compositions;
+- Python automation for component installation and Tailwind config generation.
+
+Example prompts after installation:
+
+```text
+Build an accessible login form with shadcn/ui, Tailwind, and dark-mode support.
+```
+
+```text
+Create a responsive dashboard layout with consistent design tokens and theme customization.
+```
+
+The agent will automatically discover and use `ui-styling` for UI components, design systems, responsive layouts, theming, dark mode, accessibility, or consistent styling patterns.
+
 ## Repository structure
 
 ```text
@@ -279,9 +329,21 @@ The agent will automatically discover and use `typesafe-ai` when a feature needs
 │   ├── postgres-best-practices/
 │   │   ├── SKILL.md
 │   │   └── references/
-│   └── typesafe-ai/
-│       ├── LICENSE
-│       └── SKILL.md
+│   ├── typesafe-ai/
+│   │   ├── LICENSE
+│   │   └── SKILL.md
+│   ├── ui-ux-pro-max/
+│   │   ├── LICENSE
+│   │   ├── SKILL.md
+│   │   ├── data/
+│   │   ├── references/
+│   │   └── scripts/
+│   └── ui-styling/
+│       ├── LICENSE.txt
+│       ├── SKILL.md
+│       ├── canvas-fonts/
+│       ├── references/
+│       └── scripts/
 └── install.sh                       # Local and remote installer
 ```
 
