@@ -17,16 +17,16 @@ trap cleanup 0 HUP INT TERM
 
 usage() {
   cat <<'EOF'
-Usage: ./install.sh [--agent <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
+Usage: ./install.sh [--target <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
 
 Options:
-  --agent <agent>      Agent target (default: all)
+  --target <agent>     Agent target (default: all)
   --skill <skill>      Skill to install (default: all)
   --skip-graft-setup   Copy graft skill files only; skip CLI install, graft init, and verification
   --graft-no-global    Pass --no-global to graft init (repo-only wiring, no writes outside destination)
   -h, --help           Show this help
 
-Agents:
+Targets:
   all          Install for every supported agent
   agents       Install to .agents/skills (Zed and Agent Skills clients)
   claude       Install to .claude/skills
@@ -45,16 +45,16 @@ Graft skill setup:
 
 Examples:
   ./install.sh
-  ./install.sh --agent claude /path/to/project
+  ./install.sh --target claude /path/to/project
   ./install.sh --skill authula /path/to/project
-  ./install.sh --agent claude --skill authula "$HOME"
+  ./install.sh --target claude --skill authula "$HOME"
   ./install.sh --skill graft /path/to/project
   ./install.sh --skill graft --graft-no-global /path/to/project
   ./install.sh --skill graft --skip-graft-setup /path/to/project
 
 Remote usage:
   curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh
-  curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --agent claude --skill authula /path/to/project
+  curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --target claude --skill authula /path/to/project
   curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh | sh -s -- --skill graft /path/to/project
 EOF
 }
@@ -205,8 +205,8 @@ graft_no_global=false
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --agent)
-      [ "$#" -ge 2 ] || fail 'Missing value for --agent'
+    --target)
+      [ "$#" -ge 2 ] || fail 'Missing value for --target'
       agent=$2
       shift 2
       ;;
@@ -256,7 +256,7 @@ case "$agent" in
   claude) install_bundle .claude "$destination" "$skill" ;;
   openclaude) install_bundle .openclaude "$destination" "$skill" ;;
   zcode) install_bundle .zcode "$destination" "$skill" ;;
-  *) fail "Unknown agent: $agent" ;;
+  *) fail "Unknown target: $agent" ;;
 esac
 
 graft_installed=false
