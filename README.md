@@ -4,7 +4,7 @@ A collection of portable [Agent Skills](https://agentskills.io/) for AI coding a
 
 ## Supported agents
 
-| Target | Project directory | `--agent` value |
+| Target | Project directory | `--target` value |
 | --- | --- | --- |
 | Zed / Agent Skills-compatible clients | `.agents/skills/` | `agents` |
 | Claude Code | `.claude/skills/` | `claude` |
@@ -32,14 +32,14 @@ Install for one agent only:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
-  | sh -s -- --agent claude /path/to/project
+  | sh -s -- --target claude /path/to/project
 ```
 
 Install one skill for one agent:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
-  | sh -s -- --agent claude --skill authula /path/to/project
+  | sh -s -- --target claude --skill authula /path/to/project
 ```
 
 Arguments passed to a piped shell must come after `sh -s --`.
@@ -49,7 +49,7 @@ Arguments passed to a piped shell must come after `sh -s --`.
 > ```sh
 > curl -fsSLO https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh
 > less install.sh
-> sh install.sh --agent claude --skill authula /path/to/project
+> sh install.sh --target claude --skill authula /path/to/project
 > ```
 
 Remote installation requires `curl` or `wget`, plus `tar`.
@@ -64,16 +64,16 @@ Install all skills for all agents:
 ./install.sh /path/to/project
 ```
 
-Select one agent with `--agent`:
+Select one agent with `--target`:
 
 ```sh
-./install.sh --agent claude /path/to/project
-./install.sh --agent agents /path/to/project
-./install.sh --agent openclaude /path/to/project
-./install.sh --agent zcode /path/to/project
+./install.sh --target claude /path/to/project
+./install.sh --target agents /path/to/project
+./install.sh --target openclaude /path/to/project
+./install.sh --target zcode /path/to/project
 ```
 
-Select one skill with `--skill`. Without `--agent`, the selected skill is installed for every supported agent:
+Select one skill with `--skill`. Without `--target`, the selected skill is installed for every supported agent:
 
 ```sh
 ./install.sh --skill authula /path/to/project
@@ -82,7 +82,7 @@ Select one skill with `--skill`. Without `--agent`, the selected skill is instal
 Select an agent and a skill together:
 
 ```sh
-./install.sh --agent claude --skill authula /path/to/project
+./install.sh --target claude --skill authula /path/to/project
 ```
 
 When run without arguments, the installer installs all skills for all agents into the current directory:
@@ -105,14 +105,14 @@ Use your home directory as the destination:
 Or install a specific skill for one agent:
 
 ```sh
-./install.sh --agent claude --skill authula "$HOME"
+./install.sh --target claude --skill authula "$HOME"
 ```
 
 The same operation can be run remotely:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/install.sh \
-  | sh -s -- --agent claude --skill authula "$HOME"
+  | sh -s -- --target claude --skill authula "$HOME"
 ```
 
 > Global locations depend on the agent. Claude Code uses `~/.claude/skills/`, while Zed and compatible Agent Skills clients can use `~/.agents/skills/`.
@@ -120,12 +120,12 @@ curl -fsSL https://raw.githubusercontent.com/masb0ymas/ai-coding-skills/main/ins
 ## Installer reference
 
 ```text
-Usage: ./install.sh [--agent <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
+Usage: ./install.sh [--target <agent>] [--skill <skill>] [--skip-graft-setup] [--graft-no-global] [destination]
 ```
 
 | Option | Description | Default |
 | --- | --- | --- |
-| `--agent <agent>` | Target `all`, `agents`, `claude`, `openclaude`, or `zcode` | `all` |
+| `--target <agent>` | Target `all`, `agents`, `claude`, `openclaude`, or `zcode` | `all` |
 | `--skill <skill>` | Install all skills or one skill by directory name | `all` |
 | `--skip-graft-setup` | Copy graft skill files only; skip CLI install, `graft init`, and verification | Disabled |
 | `--graft-no-global` | Pass `--no-global` to `graft init` for repo-only wiring | Disabled |
@@ -167,164 +167,42 @@ Graft setup is skipped automatically when the destination is `$HOME`, because gl
 
 ## Available skills
 
-### `authula`
+| Skill | What it does |
+| --- | --- |
+| [`authula`](docs/authula/README.md) | Builds authentication with Authula, the open-source, plugin-based Go auth framework: library and standalone modes, plugins, route mappings, hooks, and custom plugins. |
+| [`graft`](docs/graft/README.md) | Repo-context workflow for repositories initialized with Graft: a linked-markdown graph plus call graphs for finding code, tracing callers, and scoping edits with minimal token use. |
+| [`humanizer`](docs/humanizer/README.md) | Rewrites AI-sounding text so it reads like a person wrote it, without changing what it says. Built on Wikipedia's "Signs of AI writing". |
+| [`postgres-best-practices`](docs/postgres-best-practices/README.md) | Best practices for PostgreSQL 14 through 18: schema design, indexing, query optimization, diagnostics, replication, backup and restore, security, and upgrades. |
+| [`typesafe-ai`](docs/typesafe-ai/README.md) | Builds AI-powered software with TypeSafe System One models: typed judgments and probabilities that code can combine, for routing, ranking, extraction, and verification. |
+| [`ui-ux-pro-max`](docs/ui-ux-pro-max/README.md) | UI/UX design intelligence with searchable local catalogs: styles, product palettes, font pairings, UX guidelines, icons, motion presets, chart types, and 22 technology stacks. |
+| [`ui-styling`](docs/ui-styling/README.md) | Accessible interfaces with shadcn/ui, Tailwind CSS, theming, dark mode, and canvas-based visual design. |
 
-Guidance for building authentication with [Authula](https://authula.dev/docs), a plugin-based authentication framework for Go.
+Each reference page documents when the skill activates, what it covers, how it works, every file it ships, and example prompts. Install any single skill the same way:
 
-Main topics include:
-
-- library and standalone modes;
-- email/password, OAuth2, sessions, JWT, TOTP, magic links, API keys, and other plugins;
-- route mappings and endpoint protection;
-- Docker, TOML, environment variables, CORS, and CSRF configuration;
-- custom routes, hooks, service hooks, and custom plugins.
-
-Example prompts after installation:
-
-```text
-Create a standalone Authula setup with PostgreSQL, email-password,
-and sessions. Protect the /me endpoint and include config.toml and .env.example.
+```sh
+./install.sh --target claude --skill humanizer /path/to/project
 ```
-
-```text
-Add Authula to this Go backend with GitHub OAuth and session authentication.
-```
-
-The agent will automatically discover and use `authula` when a request is related to Authula.
-
-### `graft`
-
-Repo-context workflow for repositories initialized with [Graft](https://github.com/nanonets/graft): a local, linked-markdown graph plus wiring/call graphs for finding code, understanding flows, tracing callers, and scoping edits with minimal token use.
-
-Main topics include:
-
-- `graft ask "<question>" --source` for location and understanding;
-- `graft grep "<pattern>"` for exhaustive occurrences;
-- `graft skeleton <file>` for a file’s API surface;
-- `graft callers <symbol>` and `--depth N` for exact edges and blast radius;
-- `graft map` for cold-start orientation;
-- `graft build` / `graft check` for graph lifecycle and CI freshness.
-
-Example prompts after installation:
-
-```text
-Run graft map, then explain how this repository is organized and where changes usually belong.
-```
-
-```text
-Use graft to find where authentication errors are handled, then scope the smallest safe edit.
-```
-
-The agent will automatically discover and use `graft` whenever a task benefits from Graft’s context graph instead of grepping or reading source files directly.
-
-### `postgres-best-practices`
-
-Best practices and guidelines for working with PostgreSQL 14 through 18, with version-specific features tagged and environment-dependent examples annotated.
-
-Main topics include:
-
-- schema design, data types, normalization, and partitioning;
-- indexing strategies, composite indexes, and partial/covering indexes;
-- query optimization, `EXPLAIN ANALYZE`, bottlenecks, and planner tuning;
-- query patterns: CTEs, window functions, lateral joins, UPSERT, JSONB, and anti-patterns;
-- performance diagnostics, locks, `VACUUM`, and connection management;
-- logical replication, hot standby, transaction isolation, backup/restore, security/roles, bulk loading, connection pooling, and major upgrades.
-
-Example prompts after installation:
-
-```text
-Review this Postgres schema and suggest indexes for the most common query patterns.
-```
-
-```text
-This query is slow under load. Use EXPLAIN ANALYZE and recommend the smallest safe optimization.
-```
-
-The agent will automatically discover and use `postgres-best-practices` when writing SQL, designing schemas, optimizing queries, or setting up Postgres.
-
-### `typesafe-ai`
-
-Guidance for building AI-powered software with [TypeSafe](https://docs.typesafe.ai/) System One models, including Jev. It turns natural language and application state into typed judgments and probabilities that code can combine.
-
-Main topics include:
-
-- `Choice`, `Noul`, and `Score` primitives for structured decisions;
-- state design, instructions, criteria, and atomic question decomposition;
-- routing, ranking, extraction, verification, reranking, and interaction patterns;
-- speculative fan-out, confidence-gated routing, and composite scoring;
-- live docs, SDK usage, cookbooks, and uncertainty handling.
-
-Example prompts after installation:
-
-```text
-Design TypeSafe judgments for routing support tickets by intent, urgency, and required arguments.
-```
-
-```text
-Replace this prompt-and-parse LLM step with a structured TypeSafe Choice plus confidence-based escalation.
-```
-
-The agent will automatically discover and use `typesafe-ai` when a feature needs programmable common sense or a prompt-and-parse step could become a structured decision.
-
-### `ui-ux-pro-max`
-
-UI/UX design intelligence from [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT) for designing, building, reviewing, or fixing web, mobile, and desktop interfaces.
-
-Main topics include:
-
-- AI-powered design-system generation with pattern, style, color, typography, effects, and anti-patterns;
-- 79 searchable UI styles (50 active), 192 product palettes/reasoning profiles, and 74 font pairings;
-- 119 UX guidelines covering accessibility, interaction, responsive layout, forms, navigation, and charts;
-- searchable local data for icons, GSAP presets, chart types, and 22 technology stacks;
-- Python-powered `search.py` for design-system generation, domain-specific lookup, and stack-specific guidance;
-- pre-delivery quality checks and a persistable Master + page-override design-system pattern.
-
-Example prompts after installation:
-
-```text
-Build a landing page for my SaaS product with a complete generated design system.
-```
-
-```text
-Review this dashboard UI for accessibility, responsive layout, and UX anti-patterns.
-```
-
-The agent will automatically discover and use `ui-ux-pro-max` for pages, components, design systems, accessibility, animation, responsiveness, typography, color, charts, or stack-specific UI implementation.
-
-### `ui-styling`
-
-UI styling skill from [UI UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) (MIT, upstream author: claudekit) for creating accessible interfaces with shadcn/ui, Tailwind CSS, and canvas-based visual design.
-
-Main topics include:
-
-- shadcn/ui components built on Radix UI: forms, layout, navigation, overlays, dialogs, tables, and feedback;
-- theme configuration, CSS variables, color palettes, and dark-mode implementation;
-- accessibility patterns: keyboard navigation, focus management, ARIA, and form validation;
-- Tailwind utility-first styling, responsive mobile-first layouts, customization, and theme extensions;
-- canvas design-system philosophy for posters, brand materials, and visual compositions;
-- Python automation for component installation and Tailwind config generation.
-
-Example prompts after installation:
-
-```text
-Build an accessible login form with shadcn/ui, Tailwind, and dark-mode support.
-```
-
-```text
-Create a responsive dashboard layout with consistent design tokens and theme customization.
-```
-
-The agent will automatically discover and use `ui-styling` for UI components, design systems, responsive layouts, theming, dark mode, accessibility, or consistent styling patterns.
 
 ## Repository structure
 
 ```text
 .
+├── docs/                            # Per-skill reference documentation
+│   ├── authula/README.md
+│   ├── graft/README.md
+│   ├── humanizer/README.md
+│   ├── postgres-best-practices/README.md
+│   ├── typesafe-ai/README.md
+│   ├── ui-ux-pro-max/README.md
+│   └── ui-styling/README.md
 ├── skills/                          # Canonical source for every skill
 │   ├── authula/
 │   │   ├── SKILL.md
 │   │   └── references/
 │   ├── graft/
+│   │   └── SKILL.md
+│   ├── humanizer/
+│   │   ├── LICENSE
 │   │   └── SKILL.md
 │   ├── postgres-best-practices/
 │   │   ├── SKILL.md
@@ -360,8 +238,9 @@ The agent will automatically discover and use `ui-styling` for UI components, de
    ```
 
 3. The directory name must match `name` and use lowercase letters, numbers, and hyphens.
+4. Document the skill in `docs/<skill-name>/README.md` and link it from the table under [Available skills](#available-skills).
 
-The root `skills/` directory is the single source of truth. The installer copies from it directly into each selected agent's skills directory.
+The root `skills/` directory is the single source of truth. The installer copies from it directly into each selected agent's skills directory. The `docs/` directory is documentation only and is never installed.
 
 ## Security
 
