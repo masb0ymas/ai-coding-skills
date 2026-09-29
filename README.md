@@ -171,8 +171,10 @@ Graft setup is skipped automatically when the destination is `$HOME`, because gl
 | --- | --- |
 | [`authula`](docs/authula/README.md) | Builds authentication with Authula, the open-source, plugin-based Go auth framework: library and standalone modes, plugins, route mappings, hooks, and custom plugins. |
 | [`graft`](docs/graft/README.md) | Repo-context workflow for repositories initialized with Graft: a linked-markdown graph plus call graphs for finding code, tracing callers, and scoping edits with minimal token use. |
+| [`hono`](docs/hono/README.md) | Builds web apps and APIs with Hono, the web-standard TypeScript framework for Workers, Node.js, Bun, Deno, and edge platforms: routing, middleware, validation, RPC, and testing. |
 | [`humanizer`](docs/humanizer/README.md) | Rewrites AI-sounding text so it reads like a person wrote it, without changing what it says. Built on Wikipedia's "Signs of AI writing". |
 | [`postgres-best-practices`](docs/postgres-best-practices/README.md) | Best practices for PostgreSQL 14 through 18: schema design, indexing, query optimization, diagnostics, replication, backup and restore, security, and upgrades. |
+| [`typeorm`](docs/typeorm/README.md) | Works with TypeORM, the TypeScript ORM: DataSource setup, entities and columns, relations, repositories and find options, QueryBuilder, transactions, and migrations. |
 | [`typesafe-ai`](docs/typesafe-ai/README.md) | Builds AI-powered software with TypeSafe System One models: typed judgments and probabilities that code can combine, for routing, ranking, extraction, and verification. |
 | [`ui-ux-pro-max`](docs/ui-ux-pro-max/README.md) | UI/UX design intelligence with searchable local catalogs: styles, product palettes, font pairings, UX guidelines, icons, motion presets, chart types, and 22 technology stacks. |
 | [`ui-styling`](docs/ui-styling/README.md) | Accessible interfaces with shadcn/ui, Tailwind CSS, theming, dark mode, and canvas-based visual design. |
@@ -190,8 +192,10 @@ Each reference page documents when the skill activates, what it covers, how it w
 ├── docs/                            # Per-skill reference documentation
 │   ├── authula/README.md
 │   ├── graft/README.md
+│   ├── hono/README.md
 │   ├── humanizer/README.md
 │   ├── postgres-best-practices/README.md
+│   ├── typeorm/README.md
 │   ├── typesafe-ai/README.md
 │   ├── ui-ux-pro-max/README.md
 │   └── ui-styling/README.md
@@ -201,10 +205,16 @@ Each reference page documents when the skill activates, what it covers, how it w
 │   │   └── references/
 │   ├── graft/
 │   │   └── SKILL.md
+│   ├── hono/
+│   │   ├── SKILL.md
+│   │   └── references/
 │   ├── humanizer/
 │   │   ├── LICENSE
 │   │   └── SKILL.md
 │   ├── postgres-best-practices/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   ├── typeorm/
 │   │   ├── SKILL.md
 │   │   └── references/
 │   ├── typesafe-ai/
