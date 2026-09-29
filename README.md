@@ -170,6 +170,7 @@ Graft setup is skipped automatically when the destination is `$HOME`, because gl
 | Skill | What it does |
 | --- | --- |
 | [`authula`](docs/authula/README.md) | Builds authentication with Authula, the open-source, plugin-based Go auth framework: library and standalone modes, plugins, route mappings, hooks, and custom plugins. |
+| [`better-auth`](docs/better-auth/README.md) | Builds authentication with Better Auth, the TypeScript auth framework: server instance and client, database adapters, sessions and cookies, social/OAuth and plugin-based sign-in, hooks, and framework integrations. |
 | [`graft`](docs/graft/README.md) | Repo-context workflow for repositories initialized with Graft: a linked-markdown graph plus call graphs for finding code, tracing callers, and scoping edits with minimal token use. |
 | [`hono`](docs/hono/README.md) | Builds web apps and APIs with Hono, the web-standard TypeScript framework for Workers, Node.js, Bun, Deno, and edge platforms: routing, middleware, validation, RPC, and testing. |
 | [`humanizer`](docs/humanizer/README.md) | Rewrites AI-sounding text so it reads like a person wrote it, without changing what it says. Built on Wikipedia's "Signs of AI writing". |
@@ -191,6 +192,7 @@ Each reference page documents when the skill activates, what it covers, how it w
 .
 ├── docs/                            # Per-skill reference documentation
 │   ├── authula/README.md
+│   ├── better-auth/README.md
 │   ├── graft/README.md
 │   ├── hono/README.md
 │   ├── humanizer/README.md
@@ -201,6 +203,9 @@ Each reference page documents when the skill activates, what it covers, how it w
 │   └── ui-styling/README.md
 ├── skills/                          # Canonical source for every skill
 │   ├── authula/
+│   │   ├── SKILL.md
+│   │   └── references/
+│   ├── better-auth/
 │   │   ├── SKILL.md
 │   │   └── references/
 │   ├── graft/
