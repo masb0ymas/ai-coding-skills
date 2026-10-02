@@ -1,0 +1,3 @@
+interface:
+  display_name: "Fumadocs"
+  short_description: "Docs content and site wiring in apps/docs"
