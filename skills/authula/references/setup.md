@@ -72,7 +72,7 @@ buffer_size = 100
 
 Event bus notes: `gochannel` is in-memory (events lost on restart, fine for dev). Redis, Kafka, NATS, RabbitMQ enable distributed handling across instances. For sqlite the file path is set in `[event_bus.sqlite] db_path`.
 
-### .env
+### Environment variables (`.env`)
 
 ```
 AUTHULA_CONFIG_PATH=       # optional; defaults to ./config.toml
@@ -96,12 +96,14 @@ POSTGRES_URL= REDIS_URL= KAFKA_BROKERS= NATS_URL= RABBITMQ_URL= EVENT_BUS_CONSUM
 ### Docker
 
 ```bash
-docker run -itd \
+docker container run -itd \
   -p 8080:8080 \
   -v ./config.toml:/home/appuser/config.toml \
-  --env-file ./.env \
-  ghcr.io/authula/authula:latest
+  --env-file <path-to-env-file> \
+  ghcr.io/authula/authula:v1.46.0
 ```
+
+Point `--env-file` at the `.env` file you created (for example `./.env`) and pin the image tag (or digest) you intend to run.
 
 ## Library mode
 
@@ -199,13 +201,15 @@ Library-mode equivalent: pass `emailplugin.New(emailplugintypes.EmailPluginConfi
 ```bash
 curl -X POST http://localhost:8080/api/auth/email-password/sign-up \
   -H "Content-Type: application/json" \
-  -d '{"name":"John Doe","email":"john.doe@example.com","password":"password123"}'
+  --json '{"name":"John Doe","email":"john.doe@example.com","password":"password123"}'
 
 curl -X POST http://localhost:8080/api/auth/email-password/sign-in \
   -H "Content-Type: application/json" \
-  -d '{"email":"john.doe@example.com","password":"password123"}'
+  --json '{"email":"john.doe@example.com","password":"password123"}'
 
 curl http://localhost:8080/api/auth/me -H "Cookie: authula.session_token=<token>"
 ```
+
+`--json` requires curl 7.82+; on older curl use `-d` instead.
 
 Sign-up body fields: `name`, `email`, `password`, optional `image`, `metadata`, `callback_url`.

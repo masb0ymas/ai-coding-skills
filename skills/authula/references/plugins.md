@@ -15,23 +15,23 @@ Every plugin page follows the same layout: Overview, Configuration (standalone T
 
 Base URL: `https://www.authula.dev/docs/plugins/`
 
-| Plugin            | Page                                                            | What it is                                                                                    | Captured here? |
-| ----------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | -------------- |
-| Session           | `session`                                                       | Cookie sessions, sliding renewal; capabilities `session.auth`, `session.auth.optional`        | yes            |
-| Email & Password  | `email-password`                                                | Sign-up, sign-in, verification, reset, email change                                           | yes            |
-| Email             | `email`                                                         | Transactional email with multiple providers and automatic failover (SMTP used in examples)    | summary only   |
-| OAuth2            | `oauth2` (+ `oauth2/discord`, `oauth2/github`, `oauth2/google`) | Social login                                                                                  | yes            |
-| TOTP              | `totp`                                                          | Authenticator-app 2FA, backup codes, trusted devices                                          | yes            |
-| Magic Link        | `magic-link`                                                    | Passwordless email links                                                                      | not captured   |
-| JWT               | `jwt`                                                           | JWT auth (Ed25519, key rotation per security page)                                            | not captured   |
-| Bearer            | `bearer`                                                        | Bearer-token auth                                                                             | not captured   |
-| API Key           | `api-key`                                                       | API key auth                                                                                  | not captured   |
-| CSRF              | `csrf`                                                          | Double-submit-cookie CSRF protection; capability `csrf.protect`                               | summary only   |
-| Rate Limit        | `ratelimit` (note: URL has no hyphen; config ID is `ratelimit`) | Rate limiting                                                                                 | not captured   |
-| Secondary Storage | `secondary-storage`                                             | In-memory, DB, or Redis key-value store for rate-limit counters and other high-frequency data | summary only   |
-| Access Control    | `access-control`                                                | Roles and permissions; used together with route mapping `permissions`                         | not captured   |
-| Admin             | `admin`                                                         | Admin endpoints                                                                               | not captured   |
-| Organizations     | `organizations`                                                 | Multi-tenant orgs                                                                             | not captured   |
+| Plugin            | Page                                                            | What it is                                                                             | Captured here? |
+| ----------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------- |
+| Session           | `session`                                                       | Cookie sessions, sliding renewal; capabilities `session.auth`, `session.auth.optional` | yes            |
+| Email & Password  | `email-password`                                                | Sign-up, sign-in, verification, reset, email change                                    | yes            |
+| Email             | `email`                                                         | Transactional email with multiple providers and automatic failover                     | summary only   |
+| OAuth2            | `oauth2` (+ `oauth2/discord`, `oauth2/github`, `oauth2/google`) | Social login                                                                           | yes            |
+| TOTP              | `totp`                                                          | Authenticator-app 2FA, backup codes, trusted devices                                   | yes            |
+| Magic Link        | `magic-link`                                                    | Passwordless email links                                                               | not captured   |
+| JWT               | `jwt`                                                           | JWT auth (Ed25519, key rotation per security page)                                     | not captured   |
+| Bearer            | `bearer`                                                        | Bearer-token auth                                                                      | not captured   |
+| API Key           | `api-key`                                                       | API key auth                                                                           | not captured   |
+| CSRF              | `csrf`                                                          | Double-submit-cookie CSRF protection; capability `csrf.protect`                        | summary only   |
+| Rate Limit        | `ratelimit` (note: URL has no hyphen; config ID is `ratelimit`) | Rate limiting                                                                          | not captured   |
+| Secondary Storage | `secondary-storage`                                             | In-memory, DB, or Redis key-value store for rate-limit counters and similar data       | summary only   |
+| Access Control    | `access-control`                                                | Roles and permissions; used together with route mapping `permissions`                  | not captured   |
+| Admin             | `admin`                                                         | Admin endpoints                                                                        | not captured   |
+| Organizations     | `organizations`                                                 | Multi-tenant orgs                                                                      | not captured   |
 
 For "not captured" or "summary only" plugins, run `web_fetch` on the page before giving config keys, endpoints, or capability names. Do not guess them.
 

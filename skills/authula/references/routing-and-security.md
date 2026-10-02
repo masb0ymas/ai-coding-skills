@@ -35,8 +35,10 @@ Behaviour:
 
 ```toml
 [[route_mappings]]
-paths = ["GET:/access-control/users/{user_id}/roles",
-         "DELETE:/access-control/users/{user_id}/roles/{role_id}"]
+paths = [
+  "GET:/access-control/users/{user_id}/roles",
+  "DELETE:/access-control/users/{user_id}/roles/{role_id}",
+]
 plugins = ["session.auth"]
 
 [[route_mappings]]
@@ -61,26 +63,26 @@ Same three forms: `METHOD:/path`, `/path`, `/path/*`. Matching is base-path awar
 
 ## Mappings vs disabled paths
 
-- Route should stay available but needs auth or permissions: **route mapping**.
+- Route should stay available but needs auth or permission checks: **route mapping**.
 - Route should not be handled by Authula at all: **disabled path**.
 
 ## Security model (summary)
 
 Values below come from the Security concepts page. Where they conflict with defaults in `config.toml` or a plugin page, the config or plugin page wins for actual behaviour.
 
-| Area               | What Authula does                                                                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Password hashing   | Argon2id (64 MB memory, 4 threads, 16-byte salts)                                                                                                                 |
-| JWT signatures     | Ed25519                                                                                                                                                           |
-| Data encryption    | ChaCha20-Poly1305-X                                                                                                                                               |
-| Sessions           | Sliding window with periodic revalidation; fingerprints IP and user agent to detect hijacking; session tokens are hashed in the database                          |
-| JWT                | Access/refresh token pair; short-lived access token (about 15 min), refresh (about 7 days); automatic key rotation about every 30 days with a 1-hour grace period |
-| CSRF               | Double-submit cookie (24-byte tokens via header) plus Go 1.25 `CrossOriginProtection` (checks `Sec-Fetch-Site`/`Origin`)                                          |
-| Rate limiting      | In-memory, Redis, or DB backends with failover; `X-RateLimit` headers; proxy-aware client IP                                                                      |
-| Token invalidation | Redis-backed blacklist with TTL; reuse events `TokenReuseRecoveredEvent` (first reuse) and `TokenReuseMaliciousEvent` (repeated)                                  |
-| IP handling        | Zero-trust: ignores `X-Forwarded-For` unless the source is in `trusted_proxies`                                                                                   |
-| Headers and CORS   | Strict origin validation, no wildcard with credentials; injects `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`                                    |
-| Config vaulting    | Sensitive config keys are detected and encrypted in memory                                                                                                        |
+| Area | What Authula does |
+| ---- | ----------------- |
+| Password hashing | Argon2id (64 MB memory, 4 threads, 16-byte salts) |
+| JWT signatures | Ed25519 |
+| Data encryption | ChaCha20-Poly1305-X |
+| Sessions | Sliding window with periodic revalidation; fingerprints IP and user agent to detect hijacking; session tokens are hashed in the database |
+| JWT | Access/refresh token pair; short-lived access-token (about 15 min), refresh (about 7 days); automatic key rotation about every 30 days with a 1-hour grace period |
+| CSRF | Double-submit cookie (24-byte tokens via header) plus Go 1.25 `CrossOriginProtection` (checks `Sec-Fetch-Site`/`Origin`) |
+| Rate limiting | In-memory, Redis, or DB backends with failover; `X-RateLimit` headers; proxy-aware client IP |
+| Token invalidation | Redis-backed blacklist with TTL; reuse events `TokenReuseRecoveredEvent` (first reuse) and `TokenReuseMaliciousEvent` (repeated) |
+| IP handling | Zero-trust: ignores `X-Forwarded-For` unless the source is in `trusted_proxies` |
+| Headers and CORS | Strict origin validation, no wildcard with credentials; injects `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` |
+| Config vaulting | Sensitive config keys are detected and encrypted in memory |
 
 Practical rules to give users:
 

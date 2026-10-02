@@ -124,12 +124,14 @@ same_site = "lax"
 Top-level `config.toml` keys and sections include `app_name`, `base_url`, `base_path`, `disabled_paths` (must be top-level, before any `[table]`), and the `[database]`, `[logger]`, `[session]`, `[verification]`, `[security]`, `[security.cors]`, and `[event_bus]` tables. Database providers: `sqlite | postgres | mysql`. Logger levels: `debug | info | warn | error`.
 
 ```bash
-docker run -itd \
+docker container run -itd \
   -p 8080:8080 \
   -v ./config.toml:/home/appuser/config.toml \
-  --env-file ./.env \
-  ghcr.io/authula/authula:latest
+  --env-file <path-to-env-file> \
+  ghcr.io/authula/authula:v1.46.0
 ```
+
+Point `--env-file` at the `.env` file you created (for example `./.env`) and pin the image tag (or digest) you intend to run.
 
 Environment variables include `AUTHULA_CONFIG_PATH` (defaults to `./config.toml`), `AUTHULA_BASE_URL`, `AUTHULA_SECRET`, `AUTHULA_DATABASE_URL`, `GO_ENV`, `PORT`, the OAuth client ID/secret pairs, and `POSTGRES_URL` / `REDIS_URL` / `KAFKA_BROKERS` / `NATS_URL` / `RABBITMQ_URL` / `EVENT_BUS_CONSUMER_GROUP`.
 
@@ -216,7 +218,7 @@ Distinction: a route that stays available but needs auth or permissions gets a r
 | JWT signatures | Ed25519 |
 | Data encryption | ChaCha20-Poly1305-X |
 | Sessions | Sliding window with periodic revalidation; fingerprints IP and user agent; session tokens hashed in the database |
-| JWT | Access/refresh pair; access token ~15 min, refresh ~7 days; automatic key rotation ~every 30 days with a 1-hour grace period |
+| JWT | Access/refresh pair; access-token ~15 min, refresh ~7 days; automatic key rotation ~every 30 days with a 1-hour grace period |
 | CSRF | Double-submit cookie (24-byte tokens via header) plus Go 1.25 `CrossOriginProtection` (`Sec-Fetch-Site`/`Origin`) |
 | Rate limiting | In-memory, Redis, or DB backends with failover; `X-RateLimit` headers; proxy-aware client IP |
 | Token invalidation | Redis-backed blacklist with TTL; `TokenReuseRecoveredEvent` (first reuse) and `TokenReuseMaliciousEvent` (repeated) |
