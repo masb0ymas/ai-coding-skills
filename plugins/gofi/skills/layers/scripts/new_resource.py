@@ -25,6 +25,8 @@ Access modes for routes (--access):
   superuser (default)  reads public, writes need Authorization + SuperUser + idempotency
   auth                 reads public, writes need any signed-in user + idempotency
   private              every route needs Authorization; writes add idempotency
+  auth/private do NOT scope rows to their owner: every signed-in user can read
+  and change every row. Per-user data: references/patterns.md section 4.
 """
 
 from __future__ import annotations
@@ -43,7 +45,7 @@ GO_KEYWORDS = {"break", "case", "chan", "const", "continue", "default", "defer",
                "func", "go", "goto", "if", "import", "interface", "map", "package", "range", "return", "select",
                "struct", "switch", "type", "var"}
 UUID_RE = r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
-TIME_RE = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"
+TIME_RE = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$"
 
 # go type, sql type, validator chain (without Required)
 TYPES = {
@@ -174,7 +176,7 @@ def render_migration(table: str, fields: list[Field], soft: bool) -> tuple[str, 
         idx.append(f'CREATE INDEX IF NOT EXISTS idx_{table}_deleted_at ON "{table}" ("deleted_at");')
     for f in fields:
         # Postgres does not index foreign keys on its own; unique columns already have one.
-        if (f.ref or f.searchable and f.kind == "string") and not f.unique:
+        if (f.ref or f.kind == "string") and not f.unique:
             idx.append(f'CREATE INDEX IF NOT EXISTS idx_{table}_{f.name} ON "{table}" ("{f.name}");')
     up = f'CREATE TABLE IF NOT EXISTS "{table}" (\n' + ",\n".join(cols) + "\n);\n\n" + "\n".join(idx) + "\n"
     down = f'DROP TABLE IF EXISTS "{table}";\n'
@@ -723,9 +725,8 @@ def main() -> None:
             die(f"{p.relative_to(root)} already exists")
 
     mig_dir = root / "migrations"
-    nums = [int(m.group(1)) for p in mig_dir.glob("*.sql") if (m := re.match(r"^(\d+)_", p.name))]
-    width = max((len(re.match(r"^(\d+)_", p.name).group(1)) for p in mig_dir.glob("*.sql")), default=6)
-    seq = str(max(nums, default=0) + 1).zfill(width)
+    nums = [m.group(1) for p in mig_dir.glob("*.sql") if (m := re.match(r"^(\d+)_", p.name))]
+    seq = str(max(map(int, nums), default=0) + 1).zfill(max(map(len, nums), default=6))
     up, down = render_migration(table, fields, soft)
     files[mig_dir / f"{seq}_create_{table}.up.sql"] = up
     files[mig_dir / f"{seq}_create_{table}.down.sql"] = down
@@ -786,6 +787,9 @@ def main() -> None:
     if routes_note:
         print(f"note: {routes_note}")
     print(f"\nroutes: /v1/{path} access={args.access} soft-delete={'on' if soft else 'off'}")
+    if args.access != "superuser":
+        print(f"warning: --access {args.access} does not scope rows to their owner; every signed-in user "
+              "can read and change every row. For per-user data follow references/patterns.md section 4.")
     print("next: go build ./... && go vet ./... && go test ./... && make db/migrations/up")
 
 

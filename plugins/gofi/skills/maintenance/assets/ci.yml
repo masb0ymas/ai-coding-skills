@@ -43,7 +43,7 @@ jobs:
           go-version-file: go.mod
 
       - name: Format
-        run: test -z "$(gofmt -l $(find . -name '*.go' -not -path './vendor/*'))"
+        run: test -z "$(gofmt -l .)"
 
       - name: Tidy
         run: go mod tidy && git diff --exit-code go.mod go.sum

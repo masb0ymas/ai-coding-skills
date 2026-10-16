@@ -31,18 +31,19 @@ error anywhere → return err → middlewares.ErrorHandler → JSON {message} / 
 | `internal/config` | Config struct, Env* constants, cookie names | — |
 | `internal/app` | `Application` (dependency container) | `config`, `repositories` |
 | `internal/models` | table row structs, `Base`, `SoftDelete` | — |
-| `internal/dtos` | request body/query + `Validate`, response envelope | `lib/validator`, `lib/apperr` |
-| `internal/lib` | `OpenDB`, `WithTransaction`, `NewMigrator`, `ValidateRequest*`, context UID | `lib/*`, `migrations` |
+| `internal/dtos` | request body/query + `Validate`, response envelope | `lib/validator`, `lib/apperr`, `lib/constant` |
+| `internal/lib` | `OpenDB`, `WithTransaction`, `NewMigrator`, `ValidateRequest*`, context UID | `lib*`, `migrations` |
 | `internal/lib/apperr` | `Error{Kind,Message}`, sentinels, `From` | — |
 | `internal/lib/validator` | `MapValidator` + rules (Required, String, MaxLen, Regex) | — |
 | `internal/lib/constant` | domain constants (roles, seed ids) | — |
-| `internal/repositories` | SQL per table, list/where/sort/count helpers | `models`, `lib/apperr` |
+| `internal/repositories` | SQL per table, list/where/sort/count helpers | `models`, `lib*` |
 | `internal/handlers` | HTTP handlers per resource + `Handlers` factory | `app`, `dtos`, `lib*`, `models`, `repositories` |
-| `internal/middlewares` | ErrorHandler, auth, rate limit, CSRF, idempotency | `app`, `config`, `lib*` |
-| `internal/seeders` | idempotent `Seeder`s | `lib`, `lib/constant`, `models` |
+| `internal/middlewares` | ErrorHandler, auth, rate limit, CSRF, idempotency | `app`, `config`, `dtos`, `lib*` |
+| `internal/seeders` | idempotent `Seeder`s | `models`, `lib*` |
 | `migrations` | ordered SQL + `embed.FS` | — |
 
 Import-direction violations are checked by `skills/layers/scripts/audit_layers.py` in the gofi plugin.
+Its `ALLOWED` table is the source of truth; this column is a summary (`lib*` = `internal/lib` and its sub-packages).
 
 ## Conventions used throughout the code
 

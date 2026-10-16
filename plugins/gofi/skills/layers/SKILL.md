@@ -46,7 +46,9 @@ and code examples: `references/patterns.md`. In the references, `<plugin-root>` 
    - types: `string text int float bool uuid time`; flags: `required`, `max=N`,
      `ref=table`, `unique`. Non-required fields → pointer (`*T`) and a NULL column.
    - `--access superuser` (public read, super-user write — default),
-     `auth` (write: logged-in user), `private` (every route requires login).
+     `auth` (write: any logged-in user), `private` (every route requires login).
+     Neither scopes rows to their owner: any signed-in user can read and change
+     every row. For per-user data follow `references/patterns.md` §4.
    - `--no-soft-delete`, `--table`, `--path`, `--search`, `--dry-run`, `--no-routes`.
      The generator writes the migration, model, dto (+test), repository, and handler,
      registers them in both `factory.go` files, adds routes to `routes.go`, and

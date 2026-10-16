@@ -22,21 +22,22 @@ import re
 import sys
 from pathlib import Path
 
-# Internal packages each layer may import (paths relative to the module).
-# "lib/*" means any sub-package of internal/lib.
+# Internal packages each layer may import (paths relative to the module); a
+# rule also allows its sub-packages. The single source of truth for the import
+# rules: structure.md and SKILL.md only summarize it.
 ALLOWED: dict[str, set[str]] = {
     "internal/config": set(),
     "internal/models": set(),
     "internal/lib/apperr": set(),
     "internal/lib/validator": set(),
     "internal/lib/constant": set(),
-    "internal/lib": {"lib/*", "migrations"},
+    "internal/lib": {"migrations"},
     "internal/dtos": {"internal/lib/validator", "internal/lib/apperr", "internal/lib/constant"},
-    "internal/repositories": {"internal/models", "internal/lib", "lib/*"},
+    "internal/repositories": {"internal/models", "internal/lib"},
     "internal/app": {"internal/config", "internal/repositories"},
-    "internal/seeders": {"internal/models", "internal/lib", "lib/*"},
-    "internal/middlewares": {"internal/app", "internal/config", "internal/dtos", "internal/lib", "lib/*"},
-    "internal/handlers": {"internal/app", "internal/dtos", "internal/lib", "lib/*", "internal/models",
+    "internal/seeders": {"internal/models", "internal/lib"},
+    "internal/middlewares": {"internal/app", "internal/config", "internal/dtos", "internal/lib"},
+    "internal/handlers": {"internal/app", "internal/dtos", "internal/lib", "internal/models",
                           "internal/repositories"},
     "migrations": set(),
 }
@@ -73,14 +74,7 @@ def layer_of(rel: str) -> str | None:
 
 
 def allowed(layer: str, target: str) -> bool:
-    if target == layer or target.startswith(layer + "/"):
-        return True
-    for rule in ALLOWED[layer]:
-        if rule == "lib/*" and target.startswith("internal/lib/"):
-            return True
-        if target == rule:
-            return True
-    return False
+    return any(target == rule or target.startswith(rule + "/") for rule in (layer, *ALLOWED[layer]))
 
 
 def main() -> None:
@@ -129,7 +123,7 @@ def main() -> None:
             return
         ftext = factory.read_text()
         for p in sorted((root / folder).glob("*.go")):
-            if p.name in ("factory.go",) or p.name.endswith("_test.go"):
+            if p.name == "factory.go" or p.name.endswith("_test.go"):
                 continue
             for t in re.findall(type_re, p.read_text()):
                 if t not in ftext:

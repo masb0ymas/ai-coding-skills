@@ -5,7 +5,6 @@ Sources compared:
   code     envString/envBool/envInt/envDuration("KEY", ...), os.Getenv("KEY"),
            os.LookupEnv("KEY") in non-test .go files
   example  KEY= lines in .env.example (commented "# KEY=" lines count too)
-  readme   `KEY` mentions in README.md
 
 Exit 1 when the code reads a variable that .env.example does not list.
 
@@ -40,19 +39,14 @@ def main() -> None:
 
     example_path = root / ".env.example"
     example = set(EXAMPLE_RE.findall(example_path.read_text())) if example_path.exists() else set()
-    readme_path = root / "README.md"
-    readme = readme_path.read_text() if readme_path.exists() else ""
 
     missing_example = sorted(k for k in code if k not in example and k not in IGNORE)
     unused_example = sorted(k for k in example if k not in code and k not in IGNORE)
-    missing_readme = sorted(k for k in code if f"`{k}`" not in readme and k not in IGNORE)
 
     for k in missing_example:
         print(f"ERROR  {k} is read by {', '.join(sorted(code[k]))} but missing from .env.example")
     for k in unused_example:
         print(f"WARN   {k} is in .env.example but no Go code reads it (read by a library? then ignore)")
-    for k in missing_readme:
-        print(f"INFO   {k} is not mentioned in README.md")
     print(f"\n{len(code)} variables read by code, {len(example)} in .env.example")
     sys.exit(1 if missing_example else 0)
 
