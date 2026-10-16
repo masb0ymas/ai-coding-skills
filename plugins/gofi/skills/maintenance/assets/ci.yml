@@ -1,0 +1,63 @@
+# Continuous integration on every push and pull request: the same gate the
+# release workflow runs, so a broken main is caught before release time.
+# Copy to .github/workflows/ci.yml.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    # cmd/api's integration test skips itself without TEST_DB_DSN, so the job
+    # provides a throwaway PostgreSQL 18 (the migrations need uuidv7()).
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d app_test"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Format
+        run: test -z "$(gofmt -l $(find . -name '*.go' -not -path './vendor/*'))"
+
+      - name: Tidy
+        run: go mod tidy && git diff --exit-code go.mod go.sum
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -count=1 ./...
+        env:
+          TEST_DB_DSN: postgres://postgres:postgres@localhost:5432/app_test?sslmode=disable
+
+      - name: Vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./...
+
+      - name: Docker build
+        run: docker build -t ci-check .

@@ -186,10 +186,30 @@ Each reference page documents when the skill activates, what it covers, how it w
 ./install.sh --target claude --skill humanizer /path/to/project
 ```
 
+## Available plugins (Claude Code)
+
+Plugins bundle several skills under one namespace. They are installed through Claude Code's plugin marketplace, not `install.sh`.
+
+| Plugin | Skills | What it does |
+| --- | --- | --- |
+| [`gofi`](plugins/gofi/README.md) | `/gofi:scaffold`, `/gofi:layers`, `/gofi:deploy`, `/gofi:maintenance` | Scaffolds, extends, deploys, and maintains Go APIs with the [masb0ymas/gofi](https://github.com/masb0ymas/gofi) structure (Fiber v3, PostgreSQL 18, golang-migrate, Authula). |
+
+```sh
+claude plugin marketplace add masb0ymas/ai-coding-skills
+claude plugin install gofi@ai-coding-skills
+```
+
 ## Repository structure
 
 ```text
 .
+├── .claude-plugin/
+│   └── marketplace.json             # Claude Code plugin marketplace
+├── plugins/                         # Claude Code plugins (namespaced skills)
+│   └── gofi/
+│       ├── .claude-plugin/plugin.json
+│       ├── README.md
+│       └── skills/{scaffold,layers,deploy,maintenance}/
 ├── docs/                            # Per-skill reference documentation
 │   ├── authula/README.md
 │   ├── better-auth/README.md

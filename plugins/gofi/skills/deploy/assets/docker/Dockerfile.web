@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1
+# SPA in its own server image (nginx, unprivileged, port 8080). It serves the
+# built files and proxies /v1 and /health to the API container, so the
+# browser still sees one origin. Pair it with Dockerfile (API only).
+#
+# Runtime env: API_UPSTREAM (default http://api:8080)
+
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web
+WORKDIR /web
+ARG WEB_DIR=web
+COPY ${WEB_DIR}/package.json ${WEB_DIR}/package-lock.json* ${WEB_DIR}/pnpm-lock.yaml* ${WEB_DIR}/yarn.lock* ./
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/root/.local/share/pnpm/store \
+    if [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then corepack enable && (yarn install --immutable || yarn install --frozen-lockfile); \
+    else npm ci; fi
+COPY ${WEB_DIR}/ ./
+ARG WEB_BUILD_SCRIPT=build
+ARG WEB_OUT=dist
+RUN if [ -f pnpm-lock.yaml ]; then pnpm run "$WEB_BUILD_SCRIPT"; \
+    elif [ -f yarn.lock ]; then yarn run "$WEB_BUILD_SCRIPT"; \
+    else npm run "$WEB_BUILD_SCRIPT"; fi \
+ && mkdir -p /out && cp -R "$WEB_OUT"/. /out/ \
+ && test -f /out/index.html
+
+FROM nginxinc/nginx-unprivileged:1.29-alpine
+# The image renders /etc/nginx/templates/*.template with the environment at
+# start-up (only variables that are set, so nginx's own $uri stays intact).
+COPY deploy/nginx/default.conf.template /etc/nginx/templates/default.conf.template
+COPY --from=web /out /usr/share/nginx/html
+ENV API_UPSTREAM=http://api:8080
+EXPOSE 8080

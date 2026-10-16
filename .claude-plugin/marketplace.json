@@ -1,0 +1,14 @@
+{
+  "name": "ai-coding-skills",
+  "description": "Claude Code plugins from masb0ymas/ai-coding-skills",
+  "owner": {
+    "name": "masb0ymas"
+  },
+  "plugins": [
+    {
+      "name": "gofi",
+      "source": "./plugins/gofi",
+      "description": "Scaffold, extend, deploy, and maintain gofi-structured Go APIs: /gofi:scaffold, /gofi:layers, /gofi:deploy, /gofi:maintenance"
+    }
+  ]
+}

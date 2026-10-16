@@ -1,0 +1,58 @@
+# syntax=docker/dockerfile:1
+# Backend + SPA in one image: the API serves the built single-page app at /
+# (SPA_DIR) and keeps /v1 and /health for itself. One origin, so the browser
+# needs no CORS and the session cookie stays first-party.
+#
+# Build args:
+#   WEB_DIR          folder of the SPA project in the repo   (default web)
+#   WEB_OUT          its build output, relative to WEB_DIR   (default dist)
+#   WEB_BUILD_SCRIPT package.json script that builds it      (default build)
+
+# ---- SPA: built once on the builder's platform; the output is plain files.
+FROM --platform=$BUILDPLATFORM node:24-alpine AS web
+WORKDIR /web
+ARG WEB_DIR=web
+# Lockfile first, so the dependency layer is reused until it changes.
+COPY ${WEB_DIR}/package.json ${WEB_DIR}/package-lock.json* ${WEB_DIR}/pnpm-lock.yaml* ${WEB_DIR}/yarn.lock* ./
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=cache,target=/root/.local/share/pnpm/store \
+    if [ -f pnpm-lock.yaml ]; then corepack enable && pnpm install --frozen-lockfile; \
+    elif [ -f yarn.lock ]; then corepack enable && (yarn install --immutable || yarn install --frozen-lockfile); \
+    else npm ci; fi
+COPY ${WEB_DIR}/ ./
+ARG WEB_BUILD_SCRIPT=build
+ARG WEB_OUT=dist
+# The SPA calls the API with relative URLs (/v1/...): same origin, nothing to
+# bake in. Declare VITE_* / NEXT_PUBLIC_* build args here if the app needs any.
+RUN if [ -f pnpm-lock.yaml ]; then pnpm run "$WEB_BUILD_SCRIPT"; \
+    elif [ -f yarn.lock ]; then yarn run "$WEB_BUILD_SCRIPT"; \
+    else npm run "$WEB_BUILD_SCRIPT"; fi \
+ && mkdir -p /out && cp -R "$WEB_OUT"/. /out/ \
+ && test -f /out/index.html
+
+# ---- API
+FROM --platform=$BUILDPLATFORM golang:1.27-alpine AS build
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+
+COPY . .
+ARG TARGETOS TARGETARCH
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
+    go build -trimpath -ldflags="-s -w" -o /out/ ./cmd/api ./cmd/migrate ./cmd/healthcheck
+
+# ---- Runtime: static, no shell, nonroot.
+FROM gcr.io/distroless/static-debian12:nonroot
+WORKDIR /app
+
+COPY --from=build /out/api /out/migrate /out/healthcheck ./
+COPY public ./public
+COPY --from=web /out ./web
+
+ENV SPA_DIR=/app/web
+EXPOSE 8080
+HEALTHCHECK --interval=15s --timeout=5s --start-period=30s --retries=3 CMD ["/app/healthcheck"]
+ENTRYPOINT ["/app/api"]

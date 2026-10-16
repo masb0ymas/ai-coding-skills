@@ -1,0 +1,12 @@
+{
+  "name": "gofi",
+  "version": "0.1.0",
+  "description": "Scaffold, extend, deploy, and maintain Go APIs with the masb0ymas/gofi structure (Fiber v3, PostgreSQL 18, golang-migrate, Authula).",
+  "author": {
+    "name": "masb0ymas"
+  },
+  "homepage": "https://github.com/masb0ymas/ai-coding-skills/tree/main/plugins/gofi",
+  "repository": "https://github.com/masb0ymas/ai-coding-skills",
+  "license": "MIT",
+  "keywords": ["go", "fiber", "postgresql", "scaffold", "docker"]
+}

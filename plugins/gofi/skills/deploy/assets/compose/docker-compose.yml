@@ -1,0 +1,86 @@
+# Local or single-host deployment: PostgreSQL 18, a one-shot migration, the
+# API, and (profile "web") the SPA in its own nginx image.
+#
+#   docker compose up -d --build                 # API (+ SPA if the image embeds it)
+#   docker compose --profile web up -d --build   # + separate SPA server on :3000
+#
+# Secrets come from .env (APP_SECRET, RESEND_API_KEY, ...); the values below
+# only override what differs inside the compose network.
+
+name: __APP__
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: __DB__
+    volumes:
+      # postgres:18 keeps its data under /var/lib/postgresql/18/..., so the
+      # volume is mounted one level up.
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d __DB__"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+
+  # Applies the embedded migrations once, before the API starts. Safe with
+  # several API replicas: only this job migrates.
+  migrate:
+    build: .
+    image: __APP__:local
+    entrypoint: ["/app/migrate"]
+    command: ["up"]
+    environment:
+      DB_DSN: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/__DB__?sslmode=disable
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    # Same image as migrate; the second build is a cache hit.
+    build: .
+    image: __APP__:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ENV: ${APP_ENV:-production}
+      DB_DSN: postgres://postgres:${POSTGRES_PASSWORD:-postgres}@db:5432/__DB__?sslmode=disable
+      MIGRATE_ON_BOOT: "false"
+      # Public origin of the API: email links and the Google callback use it.
+      AUTH_BASE_URL: ${PUBLIC_URL:-http://localhost:8080}
+      # Docker's private ranges, so the nginx in front is believed about
+      # X-Forwarded-For. Narrow it to the real proxy in production.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12,192.168.0.0/16,10.0.0.0/8}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/app/healthcheck"]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  web:
+    profiles: ["web"]
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    restart: unless-stopped
+    environment:
+      API_UPSTREAM: http://api:8080
+    ports:
+      - "${WEB_PORT:-3000}:8080"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
