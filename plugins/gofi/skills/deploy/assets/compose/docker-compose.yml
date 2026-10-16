@@ -1,8 +1,7 @@
 # Local or single-host deployment: PostgreSQL 18, a one-shot migration, the
-# API, and (profile "web") the SPA in its own nginx image.
+# API, and (separate mode) the SPA in its own nginx image in front of it.
 #
-#   docker compose up -d --build                 # API (+ SPA if the image embeds it)
-#   docker compose --profile web up -d --build   # + separate SPA server on :3000
+#   docker compose up -d --build
 #
 # Secrets come from .env (APP_SECRET, RESEND_API_KEY, ...); the values below
 # only override what differs inside the compose network.
@@ -53,9 +52,10 @@ services:
       MIGRATE_ON_BOOT: "false"
       # Public origin of the API: email links and the Google callback use it.
       AUTH_BASE_URL: ${PUBLIC_URL:-http://localhost:8080}
-      # Docker's private ranges, so the nginx in front is believed about
-      # X-Forwarded-For. Narrow it to the real proxy in production.
-      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-172.16.0.0/12,192.168.0.0/16,10.0.0.0/8}
+      # Empty: X-Forwarded-For is ignored and the client IP is the TCP peer.
+      # Behind a load balancer, set it to that proxy's IP/CIDR only; a wider
+      # range lets anyone inside it fake their IP past the rate limits.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:
@@ -68,8 +68,9 @@ services:
       start_period: 30s
       retries: 3
 
+  # The SPA and the only way in: the API port is not published, so the API
+  # can trust X-Forwarded-For from the compose network alone.
   web:
-    profiles: ["web"]
     build:
       context: .
       dockerfile: Dockerfile.web
@@ -81,6 +82,14 @@ services:
     depends_on:
       api:
         condition: service_healthy
+
+# Pinned so TRUSTED_PROXIES can name it. Change COMPOSE_SUBNET if it clashes
+# with another network on the host.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${COMPOSE_SUBNET:-172.30.250.0/24}
 
 volumes:
   pgdata:

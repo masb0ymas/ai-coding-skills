@@ -35,8 +35,8 @@ Three modes; pick based on the user's needs (ask if it is unclear whether there 
    ```sh
    gofmt -l . && go build ./... && go test ./...      # TestSPA runs too
    docker build -t app .                               # + -f Dockerfile.web for separate
-   docker compose up -d --build                        # --profile web for separate
-   curl -i localhost:8080/health
+   docker compose up -d --build
+   curl -i localhost:8080/health                       # separate: localhost:3000/health
    ```
    Then run the checklist in `references/deploy.md` (SPA route → HTML no-cache,
    `/v1/xxx` → JSON 404, `/assets/*` immutable, container `healthy`).

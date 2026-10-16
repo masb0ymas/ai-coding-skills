@@ -7,7 +7,7 @@ Modes:
              copies it into the image (SPA_DIR=/app/web); adds the SPA
              middleware, SPA_DIR config/flag, mounts it after the API routes
   separate   backend image (as api) + Dockerfile.web: nginx image serving the
-             SPA and proxying /v1 and /health to the API
+             SPA and proxying /v1, /health and /static to the API
 
 Common: cmd/healthcheck (probe for the shell-less distroless image),
 .dockerignore entries, optional docker-compose.yml (--compose).
@@ -38,17 +38,13 @@ def die(msg: str) -> None:
     sys.exit(1)
 
 
-def write(root: Path, rel: str, content: str, backup: bool = True) -> None:
+def write(root: Path, rel: str, content: str) -> None:
     dst = root / rel
     if dst.exists():
-        old = dst.read_text()
-        if old == content:
+        if dst.read_text() == content:
             return
-        if backup:
-            shutil.copy2(dst, dst.with_name(dst.name + ".bak"))
-            changes.append(f"M {rel}  (previous kept as {rel}.bak)")
-        else:
-            changes.append(f"M {rel}")
+        shutil.copy2(dst, dst.with_name(dst.name + ".bak"))
+        changes.append(f"M {rel}  (previous kept as {rel}.bak; delete it once reviewed)")
     else:
         dst.parent.mkdir(parents=True, exist_ok=True)
         changes.append(f"A {rel}")
@@ -176,7 +172,6 @@ def main() -> None:
     ap.add_argument("--web-dir", default="web", help="SPA project folder in the repo (embedded/separate)")
     ap.add_argument("--web-out", default="dist", help="SPA build output folder, relative to --web-dir")
     ap.add_argument("--compose", action="store_true", help="write docker-compose.yml")
-    ap.add_argument("--no-dockerfile", action="store_true", help="leave Dockerfile untouched")
     args = ap.parse_args()
 
     root = Path(args.root).resolve()
@@ -188,24 +183,24 @@ def main() -> None:
 
     copy_if_missing(root, "go/cmd/healthcheck/main.go", "cmd/healthcheck/main.go")
 
-    if not args.no_dockerfile:
-        src = "Dockerfile.fullstack" if args.mode == "embedded" else "Dockerfile.api"
-        df = (ASSETS / "docker" / src).read_text()
-        df = df.replace("ARG WEB_DIR=web", f"ARG WEB_DIR={args.web_dir}").replace("ARG WEB_OUT=dist", f"ARG WEB_OUT={args.web_out}")
-        write(root, "Dockerfile", df)
+    src = "Dockerfile.fullstack" if args.mode == "embedded" else "Dockerfile.api"
+    df = (ASSETS / "docker" / src).read_text()
+    df = df.replace("ARG WEB_DIR=web", f"ARG WEB_DIR={args.web_dir}").replace("ARG WEB_OUT=dist", f"ARG WEB_OUT={args.web_out}")
+    write(root, "Dockerfile", df)
     if args.mode == "separate":
         df = (ASSETS / "docker/Dockerfile.web").read_text()
         df = df.replace("ARG WEB_DIR=web", f"ARG WEB_DIR={args.web_dir}").replace("ARG WEB_OUT=dist", f"ARG WEB_OUT={args.web_out}")
         write(root, "Dockerfile.web", df)
         write(root, "deploy/nginx/default.conf.template", (ASSETS / "nginx/default.conf.template").read_text())
-        notes.append("set TRUSTED_PROXIES on the API to the nginx container's network so rate limits see real client IPs")
+        if not args.compose:
+            notes.append("set TRUSTED_PROXIES on the API to the nginx address only, so rate limits see real client IPs")
 
     di = root / ".dockerignore"
     existing = di.read_text() if di.exists() else ""
-    wanted = ["**/node_modules"] + ([f"{args.web_dir}/{args.web_out}"] if spa_mode else [])
+    wanted = ["*.bak", "**/node_modules"] + ([f"{args.web_dir}/{args.web_out}"] if spa_mode else [])
     missing = [w for w in wanted if w not in existing.splitlines()]
     if missing:
-        block = "\n# SPA dependencies and output are produced inside the image build.\n" + "\n".join(missing) + "\n"
+        block = "\n# Backups from apply_deploy.py; SPA dependencies and output are built in the image.\n" + "\n".join(missing) + "\n"
         di.write_text(existing.rstrip("\n") + "\n" + block)
         changes.append("M .dockerignore")
 
@@ -223,10 +218,20 @@ def main() -> None:
         app = app_name(root)
         compose = (ASSETS / "compose/docker-compose.yml").read_text()
         compose = compose.replace("__APP__", app).replace("__DB__", app.replace("-", "_"))
-        if args.mode != "separate":
-            compose = re.sub(r"\n  web:\n.*?(?=\nvolumes:)", "\n", compose, flags=re.S)
+        if args.mode == "separate":
+            # nginx is the only way in: trust the pinned compose subnet, publish nothing else.
             compose = compose.replace(
-                "#   docker compose --profile web up -d --build   # + separate SPA server on :3000\n", "")
+                "      # Empty: X-Forwarded-For is ignored and the client IP is the TCP peer.\n"
+                "      # Behind a load balancer, set it to that proxy's IP/CIDR only; a wider\n"
+                "      # range lets anyone inside it fake their IP past the rate limits.\n"
+                "      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-}\n",
+                "      # Only the compose network (nginx in \"web\") may set X-Forwarded-For;\n"
+                "      # the API port is not published, so nothing else can reach it.\n"
+                "      TRUSTED_PROXIES: ${COMPOSE_SUBNET:-172.30.250.0/24}\n")
+            compose = compose.replace('    ports:\n      - "${API_PORT:-8080}:8080"\n', '    expose:\n      - "8080"\n')
+            compose = compose.replace("${PUBLIC_URL:-http://localhost:8080}", "${PUBLIC_URL:-http://localhost:3000}")
+        else:
+            compose = re.sub(r"\n  # The SPA and the only way in:.*?(?=\nvolumes:)", "", compose, flags=re.S)
         write(root, "docker-compose.yml", compose)
 
     go_files = [str(root / c.split()[1]) for c in changes if c.split()[1].endswith(".go")]

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # SPA in its own server image (nginx, unprivileged, port 8080). It serves the
-# built files and proxies /v1 and /health to the API container, so the
+# built files and proxies /v1, /health and /static to the API container, so the
 # browser still sees one origin. Pair it with Dockerfile (API only).
 #
 # Runtime env: API_UPSTREAM (default http://api:8080)

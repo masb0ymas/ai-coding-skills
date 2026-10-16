@@ -5,7 +5,7 @@
 ```
 A. api        browser/client ──► [API image :8080]  /v1, /health, /static
 B. embedded   browser ──► [API image :8080]  /v1 → API · SPA files · anything else → index.html
-C. separate   browser ──► [nginx SPA :8080] ─ /v1, /health ─► [API image :8080]
+C. separate   browser ──► [nginx SPA :8080] ─ /v1, /health, /static ─► [API image :8080]
                                └─ SPA files, fallback index.html
 ```
 Every variant makes the browser see **one origin**, so Authula's session cookie
@@ -69,8 +69,10 @@ and test it in the browser (inline scripts/analytics need exceptions).
 - `Dockerfile.web` builds the SPA, then uses `nginxinc/nginx-unprivileged`
   (port 8080, non-root). `deploy/nginx/default.conf.template` is rendered at start
   with `API_UPSTREAM` (default `http://api:8080`).
-- The API must trust nginx: `TRUSTED_PROXIES=<container network subnet>`;
-  without it the rate limiter counts every user as one IP (nginx).
+- The API must trust nginx, and only nginx: `TRUSTED_PROXIES=<nginx IP or container network subnet>`.
+  The `--compose` file does this for you: it pins the network to `COMPOSE_SUBNET`
+  (default `172.30.250.0/24`), trusts that subnet, and does not publish the API port.
+  Without any trust, the rate limiter counts every user as one IP (nginx's).
 - `AUTH_BASE_URL` = the public origin (the nginx domain), because email links and
   the Google callback are opened by the browser.
 - Release: the built-in workflow only builds `Dockerfile`. Add a second job to
