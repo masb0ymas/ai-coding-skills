@@ -39,6 +39,23 @@ All scripts only need Python 3.10+ (stdlib), `bash`, `gofmt`/Go, and `git`.
 `skills/maintenance/scripts/health.sh` runs `skills/layers/scripts/audit_layers.py`
 from the same plugin.
 
+## Update
+
+Refresh the marketplace catalog, then update the plugin and restart Claude Code
+to load the new version:
+
+```sh
+claude plugin marketplace update ai-coding-skills
+claude plugin update gofi@ai-coding-skills
+```
+
+Inside a session, `/plugin` opens the same marketplace and plugin management.
+With `--plugin-dir`, `git pull` in the clone is the update.
+
+Maintainers: bump `version` in `.claude-plugin/plugin.json` with every
+release, since installed copies are cached by version and an unchanged version
+is not picked up by `claude plugin update`.
+
 ## Example prompts
 
 ```text

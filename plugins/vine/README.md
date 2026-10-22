@@ -38,6 +38,23 @@ The scripts need Python 3.10+ (stdlib only), `bash`, `git`, Node 24, and pnpm
 `skills/layers/scripts/audit_layers.py` from the same plugin, and the scaffold's
 `vinext-docker` variant calls `skills/deploy/scripts/apply_deploy.py`.
 
+## Update
+
+Refresh the marketplace catalog, then update the plugin and restart Claude Code
+to load the new version:
+
+```sh
+claude plugin marketplace update ai-coding-skills
+claude plugin update vine@ai-coding-skills
+```
+
+Inside a session, `/plugin` opens the same marketplace and plugin management.
+With `--plugin-dir`, `git pull` in the clone is the update.
+
+Maintainers: bump `version` in `.claude-plugin/plugin.json` with every
+release, since installed copies are cached by version and an unchanged version
+is not picked up by `claude plugin update`.
+
 ## Example prompts
 
 ```text
