@@ -1,0 +1,12 @@
+{
+  "name": "vine",
+  "version": "0.1.0",
+  "description": "Scaffold, extend, deploy, and maintain React frontends with the masb0ymas/vine structure: vinext on Cloudflare Workers, vinext in Docker, or a Vite + TanStack Router SPA.",
+  "author": {
+    "name": "masb0ymas"
+  },
+  "homepage": "https://github.com/masb0ymas/ai-coding-skills/tree/main/plugins/vine",
+  "repository": "https://github.com/masb0ymas/ai-coding-skills",
+  "license": "MIT",
+  "keywords": ["react", "vinext", "vite", "tanstack-router", "cloudflare", "docker", "scaffold"]
+}

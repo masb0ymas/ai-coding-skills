@@ -9,6 +9,11 @@
       "name": "gofi",
       "source": "./plugins/gofi",
       "description": "Scaffold, extend, deploy, and maintain gofi-structured Go APIs: /gofi:scaffold, /gofi:layers, /gofi:deploy, /gofi:maintenance"
+    },
+    {
+      "name": "vine",
+      "source": "./plugins/vine",
+      "description": "Scaffold, extend, deploy, and maintain vine-structured React frontends (vinext on Cloudflare/Docker, Vite + TanStack Router): /vine:scaffold, /vine:layers, /vine:deploy, /vine:maintenance"
     }
   ]
 }

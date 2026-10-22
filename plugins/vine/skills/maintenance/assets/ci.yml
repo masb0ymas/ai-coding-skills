@@ -1,0 +1,60 @@
+# Continuous integration for a vine app: typecheck, committed route tree,
+# production build, dependency audit. Copy to .github/workflows/ci.yml.
+# APP_DIR = the app folder (e.g. apps/web in a workspace); PNPM_ROOT = the
+# folder holding pnpm-lock.yaml and packageManager (e.g. frontend/ when the
+# repo also holds the API).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: .
+  PNPM_ROOT: .
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # Reads the pnpm version from packageManager.
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: ${{ env.PNPM_ROOT }}/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: ${{ env.PNPM_ROOT }}/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: ${{ env.PNPM_ROOT }}
+
+      - name: typecheck
+        working-directory: ${{ env.APP_DIR }}
+        run: pnpm exec tsc --noEmit -p .
+
+      - name: route tree is committed (vite apps)
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          [ -f src/routeTree.gen.ts ] || exit 0
+          pnpm exec tsr generate
+          git diff --exit-code src/routeTree.gen.ts
+
+      - name: build
+        working-directory: ${{ env.APP_DIR }}
+        run: pnpm build
+
+      - name: audit
+        working-directory: ${{ env.APP_DIR }}
+        run: pnpm audit --prod --audit-level high
