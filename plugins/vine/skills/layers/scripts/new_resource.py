@@ -28,7 +28,6 @@ from __future__ import annotations
 
 import argparse
 import re
-import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -262,7 +261,7 @@ import { mutationOptions, queryOptions } from '@tanstack/react-query'
 import { DEFAULT_PAGINATE } from '@/lib/constants/paginate'
 import { getQueryClient } from '@/lib/providers/react-query'
 
-import type { __Name__FormDto } from '../dtos/__dto_dir__/schema'
+import type { __Name__FormDto } from '../dtos/__block_dir__/schema'
 import type { PaginateDto } from '../dtos/paginate'
 
 import { services } from '../services'
@@ -429,7 +428,7 @@ import type { BaseAbstractForm } from '@/types/form'
 import SimpleAlertScrollableDialogForm from '@/components/block/common/simple-alert-scrollable-dialog-form'
 __SWITCH_IMPORTS__import { useAppForm } from '@/hooks/form'
 import { toastAxiosError } from '@/lib/api/axios-error'
-import { __Name__FormSchema, type __Name__FormDto } from '@/lib/api/dtos/__dto_dir__/schema'
+import { __Name__FormSchema, type __Name__FormDto } from '@/lib/api/dtos/__block_dir__/schema'
 import { parseDto } from '@/lib/api/dtos/parse'
 import { queries } from '@/lib/api/queries'
 
@@ -634,7 +633,7 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import __Name__Table from '@/components/block/__block_dir__/table'
 
-export const Route = createFileRoute('/(app)/__url__/')({
+export const Route = createFileRoute('/(app)/__block_dir__/')({
   component: RouteComponent,
 })
 
@@ -733,9 +732,7 @@ def main() -> None:
         "__Label__": words(args.name).title(),
         "__labels__": words(plural),
         "__label__": words(args.name),
-        "__dto_dir__": block_dir,
         "__block_dir__": block_dir,
-        "__url__": block_dir,
         "__api_path__": args.api_path or f"/api/v1/{plural}",
     }
     helpers = sorted({re.match(r"\w+", schema_line(f).split(": ", 1)[1]).group() for f in fields} - {"z"})
@@ -746,7 +743,7 @@ def main() -> None:
     subs["__ADD_DEFAULTS__"] = "\n".join(add_default(f) for f in fields)
     subs["__EDIT_DEFAULTS__"] = "\n".join(edit_default(f) for f in fields)
     subs["__COLUMNS__"] = "\n".join(column(f) for f in fields if f.type != "text")
-    has_date = any(f.type == "date" for f in fields if f.type != "text")
+    has_date = any(f.type == "date" for f in fields)
     subs["__DATE_IMPORT__"] = "import { formatDate } from '@/lib/date'\n" if has_date else ""
     has_bool = any(f.type == "bool" for f in fields)
     subs["__SWITCH_IMPORTS__"] = (
@@ -836,8 +833,6 @@ def main() -> None:
             print("  updated  src/routeTree.gen.ts")
         else:
             notes.append("run `pnpm generate-routes` (or pnpm dev/build) to refresh src/routeTree.gen.ts")
-    if not shutil.which("pnpm"):
-        notes.append("pnpm not found on PATH")
     for note in notes:
         print(f"  note     {note}")
     print(f"\n{kind}: {subs['__Name__']} wired to {subs['__api_path__']}; verify with `npx tsc --noEmit` and `pnpm build`.")

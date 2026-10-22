@@ -19,7 +19,7 @@ the session cookie becomes cross-site (SameSite=Lax is not sent on cross-site fe
 
 ## Code changes for embedded mode (what `apply_deploy.py` does)
 
-1. `internal/middlewares/spa.go` (+ `spa_test.go`): `SPA(SPAConfig{FS, Exclude, AssetsPrefix})`.
+1. `internal/middlewares/spa.go` (+ `spa_test.go`): `SPA(SPAConfig{FS, Exclude})`.
    - GET/HEAD only; prefixes in `Exclude` are always passed through to the API (JSON 404, not HTML).
    - File exists → served; `/assets/*` gets `Cache-Control: public, max-age=31536000, immutable`, everything else `no-cache`.
    - Missing path without an extension → `index.html` (`no-cache`).

@@ -208,13 +208,6 @@ def workspace_of(root: Path) -> Path | None:
     return None
 
 
-def find_up(start: Path, test) -> Path | None:
-    for parent in start.parents:
-        if test(parent):
-            return parent
-    return None
-
-
 def detect_kind(root: Path) -> str:
     pkg = json.loads((root / "package.json").read_text())
     deps = {**pkg.get("dependencies", {}), **pkg.get("devDependencies", {})}
@@ -287,7 +280,7 @@ def docker(root: Path, kind: str, name: str, slug: str) -> None:
 def cloudflare(root: Path, kind: str, name: str, slug: str, branch: str) -> None:
     if kind != "vinext-cf":
         die("--target cloudflare needs a vinext app with cloudflare.config.ts (the vinext-cf variant)")
-    git_root = find_up(root / "x", lambda p: (p / ".git").exists())
+    git_root = next((p for p in (root, *root.parents) if (p / ".git").exists()), None)
     if git_root is None:
         die("no git repository found; run `git init` first (the workflow lives at the git root)")
     ws = workspace_of(root)

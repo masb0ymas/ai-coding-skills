@@ -12,7 +12,7 @@ Warnings:
   - a handler writing JSON itself instead of the dtos response helpers
   - gaps in migration numbering
 
-usage: python3 audit_layers.py [--root .] [--strict]   (--strict: warnings fail too)
+usage: python3 audit_layers.py [--root .]
 """
 
 from __future__ import annotations
@@ -80,7 +80,6 @@ def allowed(layer: str, target: str) -> bool:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", default=".")
-    ap.add_argument("--strict", action="store_true")
     args = ap.parse_args()
 
     root = Path(args.root).resolve()
@@ -157,7 +156,7 @@ def main() -> None:
     for w in warnings:
         print(f"WARN    {w}")
     print(f"\n{len(errors)} error(s), {len(warnings)} warning(s)")
-    sys.exit(1 if errors or (args.strict and warnings) else 0)
+    sys.exit(1 if errors else 0)
 
 
 if __name__ == "__main__":

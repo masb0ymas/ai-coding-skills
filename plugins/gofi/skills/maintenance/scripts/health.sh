@@ -42,20 +42,9 @@ gofmt_clean() {
   [ -z "$out" ] || { echo "not gofmt'ed:"; echo "$out"; return 1; }
 }
 
-mod_tidy_clean() {
-  local before
-  before=$(mktemp -d)
-  cp go.mod "$before/go.mod"; cp go.sum "$before/go.sum" 2>/dev/null || touch "$before/go.sum"
-  go mod tidy || return 1
-  if ! diff -q go.mod "$before/go.mod" >/dev/null || ! diff -q go.sum "$before/go.sum" >/dev/null; then
-    echo "go mod tidy changed go.mod/go.sum (left in place; review and commit)"
-    return 1
-  fi
-}
-
 step "gofmt"             gofmt_clean
 step "go mod verify"     go mod verify
-step "go mod tidy"       mod_tidy_clean
+step "go mod tidy"       go mod tidy -diff
 step "go build"          go build ./...
 step "go vet"            go vet ./...
 if [ "$QUICK" = 1 ]; then

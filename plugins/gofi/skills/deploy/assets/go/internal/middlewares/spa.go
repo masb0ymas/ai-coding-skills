@@ -19,11 +19,12 @@ type SPAConfig struct {
 	// answers with the API's JSON 404 instead of the app shell, so a typo in
 	// an API call never comes back as HTML.
 	Exclude []string
-	// AssetsPrefix holds the content-hashed files a bundler emits (Vite:
-	// /assets/). They never change under the same name, so browsers may
-	// cache them for a year. Default "/assets/".
-	AssetsPrefix string
 }
+
+// assetsPrefix holds the content-hashed files a bundler emits (Vite's
+// default). They never change under the same name, so browsers may cache
+// them for a year.
+const assetsPrefix = "/assets/"
 
 // SPA serves a built single-page app: existing files as they are, and
 // index.html for every other GET path so the client-side router can take
@@ -40,9 +41,6 @@ func SPA(cfg SPAConfig) (fiber.Handler, error) {
 	if err != nil {
 		return nil, fmt.Errorf("spa: read index.html: %w", err)
 	}
-	if cfg.AssetsPrefix == "" {
-		cfg.AssetsPrefix = "/assets/"
-	}
 
 	shell := func(c fiber.Ctx) error {
 		c.Set(fiber.HeaderCacheControl, "no-cache")
@@ -53,7 +51,7 @@ func SPA(cfg SPAConfig) (fiber.Handler, error) {
 	files := static.New("", static.Config{
 		FS: cfg.FS,
 		ModifyResponse: func(c fiber.Ctx) error {
-			if strings.HasPrefix(c.Path(), cfg.AssetsPrefix) {
+			if strings.HasPrefix(c.Path(), assetsPrefix) {
 				c.Set(fiber.HeaderCacheControl, "public, max-age=31536000, immutable")
 			} else {
 				c.Set(fiber.HeaderCacheControl, "no-cache")

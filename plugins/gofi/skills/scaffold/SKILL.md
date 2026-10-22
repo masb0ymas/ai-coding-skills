@@ -28,9 +28,8 @@ Other skills in the gofi plugin:
    python3 ${CLAUDE_PLUGIN_ROOT}/skills/scaffold/scripts/scaffold.py --dest ./shop-api \
      --module github.com/acme/shop-api --owner acme
    ```
-   Options: `--source github` (fetch the latest upstream, needs GitHub access; the default
-   `bundled` = the snapshot shipped with this skill, offline and always consistent),
-   `--no-release` (drop release-it + the GitHub Actions workflows),
+   The template is the snapshot shipped with this skill (offline, and always
+   matching these docs). Options: `--no-release` (drop release-it + the GitHub Actions workflows),
    `--no-env`, `--no-git-init`, `--force`.
    The script will: copy the template, replace the module path in every import,
    rename the project/database (`APP_NAME`, DSN, seeder advisory lock,
@@ -101,4 +100,3 @@ See `references/customize.md` for exact steps:
 - Never put secrets in process arguments or in the repo; all settings go through env
   (flags with the same name only override). `.env` must not be committed.
 - Keep LICENSE.md (MIT, original copyright masb0ymas) in the generated project.
-- If `--source github` fails (network), retry with `--source bundled`.

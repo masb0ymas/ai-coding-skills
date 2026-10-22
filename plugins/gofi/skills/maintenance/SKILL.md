@@ -15,7 +15,7 @@ bash ${CLAUDE_PLUGIN_ROOT}/skills/maintenance/scripts/health.sh [project-dir]   
 bash ${CLAUDE_PLUGIN_ROOT}/skills/maintenance/scripts/health.sh [project-dir] --quick  # without -race & govulncheck
 ```
 
-Runs: gofmt, `go mod verify`, `go mod tidy` (fails if it changes files),
+Runs: gofmt, `go mod verify`, `go mod tidy -diff` (fails if tidy would change go.mod/go.sum; writes nothing),
 build, vet, test (`-race`), `govulncheck@v1.8.0`, env sync
 (`scripts/check_env_sync.py`), the layer audit (using
 `skills/layers/scripts/audit_layers.py` from this plugin),

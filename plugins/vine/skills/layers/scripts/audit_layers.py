@@ -116,9 +116,8 @@ def main() -> None:
             target_layer = layer_of(target) if target else None
             if target_layer and target_layer in FORBIDDEN_LAYERS.get(layer, ()) and not type_only:
                 errors.append(f"{where}: {layer} must not import {target_layer} ({spec})")
-            if target is None and any(spec == pkg or spec.startswith(pkg.rstrip("/") + "/") or
-                                      (pkg.endswith("/") and spec.startswith(pkg))
-                                      for pkg in FORBIDDEN_PACKAGES.get(layer, ())) and not type_only:
+            banned = (p.rstrip("/") for p in FORBIDDEN_PACKAGES.get(layer, ()))
+            if target is None and not type_only and any(spec == p or spec.startswith(p + "/") for p in banned):
                 errors.append(f"{where}: {layer} must not import {spec}")
 
         if f.name not in CONFIG_FILES and rel != "config/env.ts":

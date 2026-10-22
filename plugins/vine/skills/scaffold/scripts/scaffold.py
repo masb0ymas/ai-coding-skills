@@ -21,7 +21,6 @@ at a local vine checkout.
 from __future__ import annotations
 
 import argparse
-import fnmatch
 import html
 import json
 import re
@@ -45,6 +44,11 @@ TEXT_SUFFIXES = {".ts", ".tsx", ".json", ".md", ".html", ".css", ".mjs", ".examp
 
 NAME_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 DEPLOY_SCRIPT = Path(__file__).resolve().parents[2] / "deploy" / "scripts" / "apply_deploy.py"
+
+# Workspace detection lives in the deploy script; both must agree on it.
+sys.dont_write_bytecode = True
+sys.path.insert(0, str(DEPLOY_SCRIPT.parent))
+from apply_deploy import workspace_of  # noqa: E402
 
 
 def die(msg: str) -> None:
@@ -77,31 +81,6 @@ def fetch(ref: str, workdir: Path) -> Path:
         if subprocess.run(cmd).returncode != 0:
             die(f"{' '.join(cmd)} failed; check network access or pass --from <local vine checkout>")
     return target
-
-
-def workspace_globs(ws: Path) -> list[str]:
-    """`packages:` entries of a pnpm-workspace.yaml (block list form)."""
-    globs, inside = [], False
-    for line in ws.read_text().splitlines():
-        if re.match(r"^packages:\s*$", line):
-            inside = True
-        elif inside and re.match(r"^\s*-\s*", line):
-            globs.append(line.split("-", 1)[1].strip().strip("'\""))
-        elif inside and line.strip() and not line.startswith((" ", "#")):
-            break
-    return globs
-
-
-def find_workspace(dest: Path) -> Path | None:
-    # Only a workspace whose `packages:` globs match dest adopts the app; a
-    # settings-only pnpm-workspace.yaml is not a workspace at all.
-    for parent in dest.parents:
-        ws = parent / "pnpm-workspace.yaml"
-        if ws.exists():
-            rel = dest.relative_to(parent).as_posix()
-            if any(fnmatch.fnmatch(rel, g.rstrip("/")) for g in workspace_globs(ws) if not g.startswith("!")):
-                return parent
-    return None
 
 
 def rewrite_text(paths: list[Path], old: str, name: str, title: str) -> int:
@@ -178,7 +157,7 @@ def main() -> None:
         die(f"{dest} is not empty (use --force to write into it)")
 
     app_dir = VARIANTS[args.variant]
-    workspace = find_workspace(dest)
+    workspace = workspace_of(dest)
     copied: list[Path] = []
 
     def copy(src_file: str, dst_file: str) -> None:

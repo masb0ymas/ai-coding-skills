@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 """Generate a new Go API project with the gofi layer structure.
 
-Copies the gofi template (bundled snapshot, or the latest upstream from GitHub),
-renames the Go module and the project name everywhere it appears, and writes a
+Copies the bundled gofi template snapshot, renames the Go module and the project name everywhere it appears, and writes a
 ready-to-run .env with freshly generated secrets.
 
 Usage:
   python3 scaffold.py --dest ./shop-api --module github.com/acme/shop-api
   python3 scaffold.py --dest ./shop-api --module github.com/acme/shop-api \
-      --app-name shop --owner acme --source github --no-release
+      --app-name shop --owner acme --no-release
 
-Only the Python standard library is used. `git` is needed for --source github
-and for --git-init.
+Only the Python standard library is used. `git` is needed for --git-init.
 """
 
 from __future__ import annotations
@@ -22,19 +20,13 @@ import secrets
 import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
-UPSTREAM = "https://github.com/masb0ymas/gofi.git"
-SKILL_DIR = Path(__file__).resolve().parent.parent
-BUNDLED = SKILL_DIR / "template"
+TEMPLATE = Path(__file__).resolve().parent.parent / "template"
 
-# Upstream files that belong to the gofi repository itself (agent tooling,
-# release history, review bots) rather than to a project generated from it.
-REPO_SPECIFIC = [
-    ".git", ".claude", "graft", "docs", ".omc", ".ignore", "ISSUES.md",
-    "CHANGELOG.md", ".coderabbit.yaml", ".mcp.json", "AGENTS.md", "CLAUDE.md",
-]
+# Local agent-tool state that can appear inside the template folder of a
+# working clone; it never belongs in a generated project.
+LOCAL_STATE = [".omc", "__pycache__"]
 RELEASE_FILES = [".github", "package.json", ".release-it.json"]
 
 TEXT_SUFFIXES = {".go", ".mod", ".md", ".yml", ".yaml", ".json", ".sql", ".example", ".txt", ""}
@@ -55,26 +47,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--module", required=True, help="Go module path, e.g. github.com/acme/shop-api")
     p.add_argument("--app-name", help="project name (lowercase, digits, '-'); default: last segment of --module")
     p.add_argument("--owner", default="OWNER", help="GitHub owner for the ghcr.io image name in README")
-    p.add_argument("--source", choices=["bundled", "github"], default="bundled",
-                   help="bundled = pinned snapshot shipped with the skill; github = latest upstream main")
-    p.add_argument("--ref", default="main", help="git ref for --source github")
     p.add_argument("--no-release", action="store_true", help="drop the release-it + GitHub Actions release files")
     p.add_argument("--no-env", action="store_true", help="do not write .env with generated secrets")
     p.add_argument("--no-git-init", action="store_true", help="do not run git init")
     p.add_argument("--force", action="store_true", help="allow a non-empty --dest")
     return p.parse_args()
-
-
-def fetch_source(args: argparse.Namespace, workdir: Path) -> Path:
-    if args.source == "bundled":
-        if not (BUNDLED / "go.mod").exists():
-            die(f"bundled template missing at {BUNDLED}")
-        return BUNDLED
-    target = workdir / "upstream"
-    cmd = ["git", "clone", "--depth", "1", "--branch", args.ref, UPSTREAM, str(target)]
-    if subprocess.run(cmd).returncode != 0:
-        die("git clone failed; retry with --source bundled")
-    return target
 
 
 def is_text(path: Path) -> bool:
@@ -129,10 +106,10 @@ def main() -> None:
     if dest.exists() and any(dest.iterdir()) and not args.force:
         die(f"{dest} is not empty (use --force to write into it)")
 
-    with tempfile.TemporaryDirectory() as tmp:
-        src = fetch_source(args, Path(tmp))
-        ignore = shutil.ignore_patterns(*REPO_SPECIFIC, *(RELEASE_FILES if args.no_release else []))
-        shutil.copytree(src, dest, ignore=ignore, dirs_exist_ok=True)
+    if not (TEMPLATE / "go.mod").exists():
+        die(f"bundled template missing at {TEMPLATE}")
+    ignore = shutil.ignore_patterns(*LOCAL_STATE, *(RELEASE_FILES if args.no_release else []))
+    shutil.copytree(TEMPLATE, dest, ignore=ignore, dirs_exist_ok=True)
 
     changed = 0
     for path in sorted(dest.rglob("*")):
@@ -160,7 +137,7 @@ def main() -> None:
     print(f"created {dest}")
     print(f"  module   {module}")
     print(f"  app name {app}  (database {db})")
-    print(f"  source   {args.source}; {changed} files rewritten")
+    print(f"  template bundled snapshot; {changed} files rewritten")
     if not args.no_env:
         print("  .env     written with a random APP_SECRET and SUPER_USER (gitignored)")
     print("\nnext:")
