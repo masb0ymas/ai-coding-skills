@@ -1,6 +1,6 @@
 {
   "name": "vine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffold, extend, deploy, and maintain React frontends with the masb0ymas/vine structure: vinext on Cloudflare Workers, vinext in Docker, or a Vite + TanStack Router SPA.",
   "author": {
     "name": "masb0ymas"

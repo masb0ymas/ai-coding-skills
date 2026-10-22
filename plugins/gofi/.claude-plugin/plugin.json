@@ -1,6 +1,6 @@
 {
   "name": "gofi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Scaffold, extend, deploy, and maintain Go APIs with the masb0ymas/gofi structure (Fiber v3, PostgreSQL 18, golang-migrate, Authula).",
   "author": {
     "name": "masb0ymas"
