@@ -1,0 +1,12 @@
+{
+  "name": "wxt",
+  "version": "0.1.0",
+  "description": "Scaffold, extend, migrate, publish, and maintain browser extensions built with WXT (wxt.dev): file-based entrypoints, content script UIs, storage, messaging, MV2/MV3 builds for Chrome, Firefox, Edge, and Safari.",
+  "author": {
+    "name": "masb0ymas"
+  },
+  "homepage": "https://github.com/masb0ymas/ai-coding-skills/tree/main/plugins/wxt",
+  "repository": "https://github.com/masb0ymas/ai-coding-skills",
+  "license": "MIT",
+  "keywords": ["wxt", "browser-extension", "web-extension", "chrome", "firefox", "manifest-v3", "vite", "migration"]
+}

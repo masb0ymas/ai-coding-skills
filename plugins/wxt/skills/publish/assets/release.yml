@@ -1,0 +1,57 @@
+# Submit a new version of a WXT extension to the stores.
+# Copy to .github/workflows/release.yml. Remove the stores you don't publish to
+# (their flags and secrets). Bump package.json "version" before running.
+# pnpm/action-setup reads the pnpm version from package.json "packageManager";
+# set it once with: pnpm pkg set packageManager=pnpm@$(pnpm -v)
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Check store auth only, upload nothing
+        type: boolean
+        default: true
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm compile
+
+      - name: Zip
+        run: |
+          pnpm zip
+          pnpm zip:firefox
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extension-zips
+          path: .output/*.zip
+
+      - name: Submit
+        run: |
+          pnpm wxt submit ${{ inputs.dry_run && '--dry-run' || '' }} \
+            --chrome-zip .output/*-chrome.zip \
+            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip \
+            --edge-zip .output/*-chrome.zip
+        env:
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}

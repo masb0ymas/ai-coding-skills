@@ -194,11 +194,13 @@ Plugins bundle several skills under one namespace. They are installed through Cl
 | --- | --- | --- |
 | [`gofi`](plugins/gofi/README.md) | `/gofi:scaffold`, `/gofi:layers`, `/gofi:deploy`, `/gofi:maintenance` | Scaffolds, extends, deploys, and maintains Go APIs with the [masb0ymas/gofi](https://github.com/masb0ymas/gofi) structure (Fiber v3, PostgreSQL 18, golang-migrate, Authula). |
 | [`vine`](plugins/vine/README.md) | `/vine:scaffold`, `/vine:layers`, `/vine:deploy`, `/vine:maintenance` | Scaffolds, extends, deploys, and maintains React frontends with the [masb0ymas/vine](https://github.com/masb0ymas/vine) structure (vinext on Cloudflare Workers or Docker, Vite + TanStack Router). |
+| [`wxt`](plugins/wxt/README.md) | `/wxt:scaffold`, `/wxt:entrypoints`, `/wxt:migrate`, `/wxt:publish`, `/wxt:maintenance` | Scaffolds, extends, migrates (from Plasmo, CRXJS, webpack, plain manifests), publishes, and maintains browser extensions built with [WXT](https://wxt.dev) (entrypoints, content script UIs, storage, MV2/MV3 builds, Chrome/Firefox/Edge store submission). |
 
 ```sh
 claude plugin marketplace add masb0ymas/ai-coding-skills
 claude plugin install gofi@ai-coding-skills
 claude plugin install vine@ai-coding-skills
+claude plugin install wxt@ai-coding-skills
 ```
 
 ## Repository structure
@@ -212,10 +214,14 @@ claude plugin install vine@ai-coding-skills
 │   │   ├── .claude-plugin/plugin.json
 │   │   ├── README.md
 │   │   └── skills/{scaffold,layers,deploy,maintenance}/
-│   └── vine/
+│   ├── vine/
+│   │   ├── .claude-plugin/plugin.json
+│   │   ├── README.md
+│   │   └── skills/{scaffold,layers,deploy,maintenance}/
+│   └── wxt/
 │       ├── .claude-plugin/plugin.json
 │       ├── README.md
-│       └── skills/{scaffold,layers,deploy,maintenance}/
+│       └── skills/{scaffold,entrypoints,migrate,publish,maintenance}/
 ├── docs/                            # Per-skill reference documentation
 │   ├── authula/README.md
 │   ├── better-auth/README.md
